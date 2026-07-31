@@ -17,12 +17,12 @@ const SideBar = () => {
         setMobileOpen(false)
     }, [pathname]);
 
-    const role = "" || "EMPLOYEE";
+    const role = "ADMIN" || "EMPLOYEE";
 
     const navItems = [
         { name: "Dashboard", href: "/dashboard", icon: LayoutGridIcon },
 
-        role === "Admin"
+        role === "ADMIN"
         ? { name: "Employees", href: "/employees", icon: UserIcon }
         : { name: "Attendance", href: "/attendance", icon: CalendarIcon },
 
