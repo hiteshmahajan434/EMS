@@ -16,7 +16,10 @@ export const getEmployeeDashboard = async (req, res) => {
             1
         );
 
-        const [todayAttendance, presentDays, pendingLeaves, latestPayslip] = await Promise.all([
+        const [employee, todayAttendance, presentDays, pendingLeaves, latestPayslip] = await Promise.all([
+            User.findById(userId)
+                .select("firstName department"),
+
             Attendance.findOne({
                 userId,
                 date: today
@@ -43,6 +46,12 @@ export const getEmployeeDashboard = async (req, res) => {
             })
         ]);
 
+        if (!employee) {
+            return res.status(404).json({
+                error: "Employee not found"
+            });
+        }
+
         return res.status(200).json({
             todayAttendance: todayAttendance
                 ? {
@@ -67,7 +76,11 @@ export const getEmployeeDashboard = async (req, res) => {
                     year: latestPayslip.year,
                     netSalary: latestPayslip.netSalary
                 }
-                : null
+                : null,
+            employee: {
+                firstName: employee.firstName,
+                department: employee.department
+            }
         });
     } catch (error) {
         console.error(error);
