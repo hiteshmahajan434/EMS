@@ -9,11 +9,25 @@ export const dummyAdminDashboardData = {
 };
 
 export const dummyEmployeeDashboardData = {
-    currentMonthAttendance: 20,
-    pendingLeaves: 2,
-    latestPayslip: {
-        netSalary: 2000,
+    role: "EMPLOYEE",
+
+    todayAttendance: {
+        checkIn: "2026-08-05T09:12:00.000Z",
+        checkOut: null,
+        totalHours: "7h 18m",
+        status: "Clocked In",
     },
+
+    presentDays: 18,
+
+    pendingLeaves: 2,
+
+    latestPayslip: {
+        month: 7,
+        year: 2026,
+        netSalary: 48500,
+    },
+
     employee: {
         firstName: "John",
         lastName: "Doe",
