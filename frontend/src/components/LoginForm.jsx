@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import LoginLeftSide from './LoginLeftSide'
 import { Link } from 'react-router-dom'
 import { ArrowLeftIcon, EyeIcon, EyeOffIcon, Loader2Icon } from 'lucide-react'
+import RegisterOrganizationModal from "./register-organization/RegisterOrganizationModal";
 
 const LoginForm = ({role, title, subtitle}) => {
 
@@ -10,6 +11,7 @@ const LoginForm = ({role, title, subtitle}) => {
     const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
+    const [openRegister, setOpenRegister] = useState(false);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -95,17 +97,22 @@ const LoginForm = ({role, title, subtitle}) => {
                             New organization?
                         </p>
 
-                        <Link
-                            to="/register"
+                        <button
+                            type="button"
+                            onClick={() => setOpenRegister(true)}
                             className="mt-2 inline-block font-medium text-indigo-600 hover:text-indigo-700 hover:underline"
                         >
                             Register your organization
-                        </Link>
+                        </button>
                     </div>
                 }   
             </div>
-        </div>
 
+            <RegisterOrganizationModal
+            open={openRegister}
+            onClose={() => setOpenRegister(false)}
+        />
+        </div>
     </div>
   )
 }
