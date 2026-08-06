@@ -10,7 +10,7 @@ const ApplyLeave = ({open, onClose, onSuccess}) => {
   const minDate = tomorrow.toISOString().split('T')[0];
 
   const handleSubmit = async (e) => {
-    e.prevetDefault();
+    e.preventDefault();
   }
 
   if(!open) return null;
@@ -98,7 +98,7 @@ const ApplyLeave = ({open, onClose, onSuccess}) => {
               Cancel
             </button>
 
-            <button type='submit' className='btn-primary flex-1 flex items-center justify-center gap-2' onClick={onClose}
+            <button type='submit' className='btn-primary flex-1 flex items-center justify-center gap-2'
               disabled={loading}
             >
               {loading ? <Loader2Icon className='w-4 h-4 animate-spin'/> : <Send className='w-4 h-4'/>}

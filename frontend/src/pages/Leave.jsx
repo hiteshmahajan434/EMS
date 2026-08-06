@@ -1,16 +1,17 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { dummyLeaveData } from '../assets/assets';
 import Loading from '../components/Loading';
-import { PalmtreeIcon, PlusIcon, ThermometerIcon, UmbrellaIcon } from 'lucide-react'
+import { Calendar1Icon, PalmtreeIcon, PlusIcon, ThermometerIcon, UmbrellaIcon } from 'lucide-react'
 import LeaveHistory from '../components/leave/LeaveHistory';
 import ApplyLeave from '../components/leave/ApplyLeave';
+import PageHero from "../components/layout/PageHero";
 
 const Leave = () => {
   const [leaves, setLeaves] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [isDeleted, setIsDeleted] = useState(false);
-  const isAdmin = true;
+  const isAdmin = false;
 
   const fetchLeaves = useCallback(() => {
     setLeaves(dummyLeaveData);
@@ -38,20 +39,22 @@ const Leave = () => {
 
   return (
     <div className='animate-fade-in'>
-      <div className='flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8'>
-        <div>
-          <h1 className='page-title'>Leave Management</h1>
-          <p className='page-subtitle'>{isAdmin ? "Manage leave applications" : "Your leave history and requests"}</p>
-        </div>
+
+      <PageHero
+        icon={Calendar1Icon}
+        title="Leave Management"
+        subtitle={isAdmin ? "Manage leave applications" : "Track your leave history and submit new requests."}
+      >
         {!isAdmin && !isDeleted && (
-          <button
-            className='btn-primary flex items-center gap-2 w-full sm:w-auto justify-center'
-            onClick={() => setShowModal(true)}
-          >
-            <PlusIcon className='w-4 h-4'/> Apply for leave
-          </button>
+            <button
+              className='btn-primary flex items-center gap-2 w-full sm:w-auto justify-center'
+              onClick={() => setShowModal(true)}
+            >
+              <PlusIcon className='w-4 h-4'/> Apply for leave
+            </button>
         )}
-      </div>
+      </PageHero>
+
       {!isAdmin && (
         <div className='grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-5 mb-8'>
           {leaveStats.map((s) => (

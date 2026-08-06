@@ -1,6 +1,6 @@
 import { format } from "date-fns";
 
-function PageHero({ icon: Icon, title, subtitle, badge }) {
+function PageHero({ icon: Icon, title, subtitle, badge, children }) {
   const today = format(new Date(), "EEEE, MMMM d, yyyy");
 
   return (
@@ -37,6 +37,12 @@ function PageHero({ icon: Icon, title, subtitle, badge }) {
             </p>
           </div>
         </div>
+
+        {children && (
+          <div className="flex flex-wrap items-center gap-3 shrink-0">
+            {children}
+          </div>
+        )}
       </div>
     </div>
   );
