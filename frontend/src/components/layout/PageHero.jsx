@@ -4,7 +4,7 @@ function PageHero({ icon: Icon, title, subtitle, badge }) {
   const today = format(new Date(), "EEEE, MMMM d, yyyy");
 
   return (
-    <div className="card p-6 sm:p-7 mb-8 bg-white border border-slate-300 shadow-md">
+    <div className="card p-6 sm:p-7 mb-8 bg-white border border-slate-100 shadow-sm">
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
         <div className="flex items-center gap-5">
           {Icon && (

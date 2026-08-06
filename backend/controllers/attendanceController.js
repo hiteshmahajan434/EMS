@@ -92,14 +92,64 @@ export const getMyAttendance = async (req, res) => {
             return res.status(404).json({error: "User not found"});
         }
 
-        const attendanceHistory = await Attendance.find({userId: userId})
-            .sort({date: -1})
-            .limit(30) //Only 30 records 
+        const now = new Date();
 
-        return res.json({
-            data: attendanceHistory,
-            user: {isDeleted : user.isDeleted}
-        });       
+        const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+        const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+        lastDay.setHours(23, 59, 59, 999);
+
+        const attendanceHistory = await Attendance.find({ //Monthly records 
+            userId,
+            date: {
+                $gte: firstDay,
+                $lte: lastDay
+            }
+        }).sort({ date: -1 }); 
+
+        const daysPresent = attendanceHistory.filter(
+            a => a.status === "PRESENT" || a.status === "LATE"
+        ).length;
+
+        const lateArrivals = attendanceHistory.filter(
+            a => a.status === "LATE"
+        ).length;
+
+        const totalHours = attendanceHistory.reduce(
+            (sum, a) => sum + (a.workingHours || 0),
+            0
+        );
+
+        const averageWorkingHours =
+            attendanceHistory.length > 0
+                ? Number((totalHours / attendanceHistory.length).toFixed(1))
+                : 0;
+
+        // Today's attendance
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        const todayAttendance = attendanceHistory.find(
+            attendance =>
+                attendance.date.getTime() === today.getTime()
+        );
+
+        return res.status(200).json({
+            success: true,
+            summary: {
+                daysPresent,
+                lateArrivals,
+                averageWorkingHours,
+            },
+            todayRecord: {
+                checkIn: todayAttendance?.checkIn || null,
+                checkOut: todayAttendance?.checkOut || null
+            },
+            attendance: attendanceHistory,
+            user: {
+                isDeleted: user.isDeleted
+            }
+        });
+
     } catch (error) {
         return res.status(500).json({ error: "Failed to fetch attendance" });
     }

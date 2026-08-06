@@ -22,7 +22,7 @@ const QuickActions = () => {
   ];
 
   return (
-    <div className="card bg-white border border-slate-300 shadow-md rounded-2xl p-5 h-full">
+    <div className="card bg-white border border-slate-100 shadow-md rounded-2xl p-5 h-full">
       <h2 className="text-lg font-semibold mb-4">
         Quick Actions
       </h2>

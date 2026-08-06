@@ -2,7 +2,7 @@ import React from 'react'
 
 const TodayAttendance = ({ todayAttendance }) => {
     return (
-        <div className="card bg-white border border-slate-300 shadow-md rounded-2xl p-6">
+        <div className="card bg-white border border-slate-100 shadow-md rounded-2xl p-6">
 
             <h2 className="text-lg font-semibold mb-5">
                 Today's Attendance

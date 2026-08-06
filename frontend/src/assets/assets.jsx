@@ -276,32 +276,75 @@ export const dummyPayslipData = [
     },
 ];
 
-export const dummyAttendanceData = [
-    {
-        _id: "69b68d19f4437fdd254d5a68",
-        employeeId: "69b411e6f8a807df391d7b13",
-        date: "2026-03-14T18:30:00.000Z",
-        checkIn: "2026-03-15T10:42:33.966Z",
-        checkOut: "2026-03-15T18:42:37.476Z",
-        status: "PRESENT",
-        workingHours: 8,
-        dayType: "Full Day",
-        createdAt: "2026-03-15T10:42:33.973Z",
-        updatedAt: "2026-03-15T10:42:37.479Z",
+export const dummyAttendanceData = {
+    success: true,
+
+    summary: {
+        workingDays: 22,
+        daysPresent: 18,
+        lateArrivals: 2,
+        averageWorkingHours: 8.3
     },
-    {
-        _id: "69b415b9f8a807df391d7bcc",
-        employeeId: "69b411e6f8a807df391d7b13",
-        date: "2026-03-12T18:30:00.000Z",
-        checkIn: "2026-03-13T13:48:41.416Z",
-        checkOut: "2026-03-13T21:48:42.430Z",
-        status: "PRESENT",
-        workingHours: 8,
-        dayType: "Full Day",
-        createdAt: "2026-03-13T13:48:41.418Z",
-        updatedAt: "2026-03-13T13:48:42.433Z",
+
+    todayRecord: {
+        checkIn: "2026-08-06T09:07:00.000Z",
+        // checkIn: null,
+        // checkOut: null,
+        checkOut: "2026-08-06T09:07:00.000Z",
     },
-];
+
+    attendanceHistory: [
+        {
+            _id: "1",
+            date: "2026-08-06T00:00:00.000Z",
+            checkIn: "2026-08-06T09:07:00.000Z",
+            checkOut: null,
+            workingHours: 0,
+            dayType: null,
+            status: "LATE"
+        },
+        {
+            _id: "2",
+            date: "2026-08-05T00:00:00.000Z",
+            checkIn: "2026-08-05T08:56:00.000Z",
+            checkOut: "2026-08-05T17:18:00.000Z",
+            workingHours: 8.37,
+            dayType: "Full Day",
+            status: "PRESENT"
+        },
+        {
+            _id: "3",
+            date: "2026-08-04T00:00:00.000Z",
+            checkIn: "2026-08-04T09:12:00.000Z",
+            checkOut: "2026-08-04T17:06:00.000Z",
+            workingHours: 7.9,
+            dayType: "Three Quarter Day",
+            status: "LATE"
+        },
+        {
+            _id: "4",
+            date: "2026-08-03T00:00:00.000Z",
+            checkIn: "2026-08-03T08:50:00.000Z",
+            checkOut: "2026-08-03T17:11:00.000Z",
+            workingHours: 8.35,
+            dayType: "Full Day",
+            status: "PRESENT"
+        },
+        {
+            _id: "5",
+            date: "2026-08-02T00:00:00.000Z",
+            checkIn: "2026-08-02T08:58:00.000Z",
+            checkOut: "2026-08-02T17:04:00.000Z",
+            workingHours: 8.1,
+            dayType: "Full Day",
+            status: "PRESENT"
+        }
+    ],
+
+    user: {
+        isDeleted: false
+    }
+};
 
 
 export function getWorkingHoursDisplay(record) {
