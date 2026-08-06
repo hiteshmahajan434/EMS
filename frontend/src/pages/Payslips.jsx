@@ -3,13 +3,15 @@ import { dummyEmployeeData, dummyPayslipData } from "../assets/assets";
 import Loading from "../components/Loading";
 import PayslipsList from "../components/payslip/PayslipsList";
 import GeneratePayslipForm from "../components/payslip/GeneratePayslipForm";
+import PageHero from "../components/layout/PageHero";
+import { Receipt } from "lucide-react";
 
 
 const Payslips = () => {
   const [payslips, setPayslips] = useState([]);
   const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(true);
-  const isAdmin = true;
+  const isAdmin = false;
 
   const fetchPayslips = useCallback(async () => {
     setPayslips(dummyPayslipData);
@@ -30,18 +32,17 @@ const Payslips = () => {
 
   return (
     <div className="animate-fade-in">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
-        <div>
-          <h1 className="page-title">Payslips</h1>
-          <p className="page-subtitle">
-            {isAdmin ? 
-              "Generate and manage employee payslips" 
-              : "Your payslip history"
-            }
-          </p>
-        </div>
+
+      <PageHero
+        icon={Receipt}
+        title="Payslips"
+        subtitle={isAdmin ? "Generate payslips for your team and manage payroll records." 
+          : "Access your payslips and download them whenever needed."
+        }
+      >
         {isAdmin && <GeneratePayslipForm employees={employees} onSuccess={fetchPayslips}/>}
-      </div>
+      </PageHero>
+
       <PayslipsList payslips={payslips} isAdmin={isAdmin} />
     </div>
   )
