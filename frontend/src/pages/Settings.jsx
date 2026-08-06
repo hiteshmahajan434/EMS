@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react"
 import { dummyProfileData } from "../assets/assets";
 import Loading from "../components/Loading";
-import { Lock } from "lucide-react";
+import { Lock, Settings2 } from "lucide-react";
 import ProfileForm from "../components/ProfileForm";
 import ChangePassword from "../components/ChangePassword";
+import PageHero from "../components/layout/PageHero";
 
 
 const Settings = () => {
@@ -26,10 +27,12 @@ const Settings = () => {
 
   return (
     <div className="animate-fade-in">
-      <div className="page-header">
-        <h1 className="page-title">Settings</h1>
-        <p className="page-subtitle">Manage your account and preferences</p>
-      </div>
+
+      <PageHero
+        icon={Settings2}
+        title="Settings"
+        subtitle="Manage your account and preferences"
+      />
 
       {profile && <ProfileForm initialData={profile} onSuccess={fetchProfile}/>}
 

@@ -5,7 +5,7 @@ import User from "../models/User.js";
 export const getProfile = async (req, res) => {
     try {
         const userId = req.user.id;
-        const user = await User.findById(userId);
+        const user = await User.findById(userId).select("-password");
 
         if(!user){
             return res.status(404).json({error: "User not found"});
@@ -30,22 +30,16 @@ export const updateProfile = async (req, res) => {
         }
 
         if(user.isDeleted){
-            return res.status(403).json({error: "Your account is deactivated. You cannot change your profile."});
+            return res.status(403).json({error: "Your account is deactivated. You cannot update your profile."});
         }
 
-        const {firstName, lastName, phone, profilePicture, bio} = req.body;
+        await User.findByIdAndUpdate(user._id, {
+            bio: req.body.bio
+        });
 
-        if(firstName) user.firstName = firstName;
-        if(lastName) user.lastName = lastName;
-        if(phone) user.phone = phone;
-        if(profilePicture) user.profilePicture = profilePicture;
-        if(bio) user.bio = bio;
-
-        await user.save();
-
-        return res.json({success: true});
+        return res.json({ success: true, message: "Profile updated successfully" });
     } catch (error) {
-        console.error(error);
+        console.error("Error updating profile", error);
         return res.status(500).json({error: "Failed to update profile"});
     }
 }

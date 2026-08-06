@@ -42,6 +42,7 @@ export const dummyProfileData = {
     lastName: "Doe",
     email: "johndoe@example.com",
     image: null,
+    bio: "Dummy bio"
 };
 
 export const dummyEmployeeData = [
