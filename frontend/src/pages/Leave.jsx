@@ -79,7 +79,7 @@ const Leave = () => {
         </div>
       )}
 
-      <LeaveHistory leaves={leaves} isAdmin={isAdmin} onUpdate={fetchLeaves}/>
+      <LeaveHistory leaves={leaves} isManagerAdmin={isAdmin} onUpdate={fetchLeaves}/>
 
       <ApplyLeave open={showModal} onClose={() => setShowModal(false)} onSuccess={fetchLeaves}/>
     </div>

@@ -1,35 +1,60 @@
 import React, { useEffect, useState } from 'react'
-import {Link, useLocation} from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { dummyProfileData } from '../assets/assets';
-import { CalendarIcon, ChevronRightIcon, DollarSignIcon, FileTextIcon, LayoutGridIcon, LogOutIcon, MenuIcon, SettingsIcon, UserIcon, XIcon } from 'lucide-react';
+import {
+    CalendarIcon, ChevronDownIcon, ChevronRightIcon, DollarSignIcon, FileTextIcon, LayoutGridIcon, LogOutIcon, MenuIcon, SettingsIcon,
+    UserIcon, UsersIcon, ClipboardCheckIcon, WalletCardsIcon, XIcon
+} from "lucide-react";
 
 const SideBar = () => {
-    const {pathname} = useLocation();
+    const { pathname } = useLocation();
     const [userName, setUserName] = useState("");
     const [mobileOpen, setMobileOpen] = useState(false);
+    const [employeeMenuOpen, setEmployeeMenuOpen] = useState(
+    pathname.startsWith("/employees")
+    );
 
     useEffect(() => {
         setUserName(dummyProfileData.firstName + " " + dummyProfileData.lastName)
     }, []);
 
-    //Close mobile sidebar on route change
+    // Close mobile sidebar on route change
     useEffect(() => {
-        setMobileOpen(false)
+    setMobileOpen(false);
     }, [pathname]);
 
-    const role = "" || "EMPLOYEE";
+    // Keep Manage Employees expanded on employee pages
+    useEffect(() => {
+    setEmployeeMenuOpen(pathname.startsWith("/employees"));
+    }, [pathname]);
 
-    const navItems = [
-        { name: "Dashboard", href: "/dashboard", icon: LayoutGridIcon },
+    const role = "MANAGER" || "EMPLOYEE";
 
-        role === "ADMIN"
-        ? { name: "Employees", href: "/employees", icon: UserIcon }
-        : { name: "Attendance", href: "/attendance", icon: CalendarIcon },
-
-        { name: "Leaves", href: "/leave", icon: FileTextIcon },
-        { name: "Payslips", href: "/payslips", icon: DollarSignIcon },
-        { name: "Settings", href: "/settings", icon: SettingsIcon },
-    ];
+    const navItems =
+        role === "MANAGER"
+            ? [
+                { name: "Dashboard", href: "/dashboard", icon: LayoutGridIcon },
+                { name: "Attendance", href: "/attendance", icon: CalendarIcon },
+                { name: "Leaves", href: "/leave", icon: FileTextIcon },
+                { name: "Payslips", href: "/payslips", icon: DollarSignIcon },
+                {
+                    name: "Manage Employees",
+                    icon: UsersIcon,
+                    children: [
+                        { name: "Employees", href: "/employees", icon: UserIcon },
+                        { name: "Attendance", href: "/employees/attendance", icon: ClipboardCheckIcon },
+                        { name: "Leaves", href: "/employees/leaves", icon: FileTextIcon },
+                    ],
+                },
+                { name: "Settings", href: "/settings", icon: SettingsIcon, }
+            ]
+            : [
+                { name: "Dashboard", href: "/dashboard", icon: LayoutGridIcon },
+                { name: "Attendance", href: "/attendance", icon: CalendarIcon },
+                { name: "Leaves", href: "/leave", icon: FileTextIcon },
+                { name: "Payslips", href: "/payslips", icon: DollarSignIcon },
+                { name: "Settings", href: "/settings", icon: SettingsIcon },
+            ];
 
     const handleLogout = () => {
         window.location.href = "/login"
@@ -41,7 +66,7 @@ const SideBar = () => {
             <div className='px-5 pt-6 pb-5 border-b border-white/6'>
                 <div className='flex items-center justify-between'>
                     <div className='flex items-center gap-3'>
-                        <UserIcon className='text-white size-7'/>
+                        <UserIcon className='text-white size-7' />
                         <div>
                             <p className='font-semibold text-[13px] text-white tracking-wide'>
                                 OneCore EMS
@@ -52,11 +77,11 @@ const SideBar = () => {
                         </div>
                     </div>
                     {/* Close button on mobile */}
-                    <button 
+                    <button
                         className='lg:hidden text-slate-400 hover:text-white p-1'
                         onClick={() => setMobileOpen(false)}
                     >
-                        <XIcon size={20}/>
+                        <XIcon size={20} />
                     </button>
                 </div>
             </div>
@@ -64,24 +89,24 @@ const SideBar = () => {
             {/* User profile card */}
             {userName && (
                 <div className="mx-3 mt-4 mb-1 p-3 rounded-lg bg-white/3 border border-white/4">
-                <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-lg bg-brand-600 flex items-center justify-center ring-1 ring-brand-400/30 shrink-0">
-                    <span className="text-white text-xs font-semibold">
-                        {userName.charAt(0).toUpperCase()}
-                    </span>
-                    </div>
-                    <div className="min-w-0 ">
-                    <p className="text-[13px] font-medium text-slate-200 truncate">
-                        {userName}
-                    </p>
-                    <p className="text-[11px] text-slate-500 truncate">
-                        {role === "Admin" ? "Administrator" : "Employee"}
-                    </p>
+                    <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-lg bg-brand-600 flex items-center justify-center ring-1 ring-brand-400/30 shrink-0">
+                            <span className="text-white text-xs font-semibold">
+                                {userName.charAt(0).toUpperCase()}
+                            </span>
+                        </div>
+                        <div className="min-w-0 ">
+                            <p className="text-[13px] font-medium text-slate-200 truncate">
+                                {userName}
+                            </p>
+                            <p className="text-[11px] text-slate-500 truncate">
+                                {role === "ADMIN"? "Administrator": role === "MANAGER"? "Manager": "Employee"}
+                            </p>
+                        </div>
                     </div>
                 </div>
-                </div>
-            )}            
-            
+            )}
+
             {/* Section label */}
             <div className='px-5 pt-5 pb-2'>
                 <p className='text-[10px] font-semibold text-slate-500 uppercase tracking-wider'>
@@ -92,18 +117,99 @@ const SideBar = () => {
             {/* Navigation List */}
             <div className='flex-1 px-3 space-y-0.5 overflow-y-auto'>
                 {navItems.map((item) => {
-                    const isActive = pathname.startsWith(item.href)
+                    if (item.children) {
+                        return (
+                            <div key={item.name}>
+                                <button
+                                    type="button"
+                                    onClick={() => setEmployeeMenuOpen(!employeeMenuOpen)}
+                                    className="group w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-[13px] font-medium text-slate-300 hover:text-white hover:bg-white/4 transition-all"
+                                >
+                                    <item.icon className="w-[17px] h-[17px] text-slate-400" />
+
+                                    <span className="flex-1 text-left">
+                                        {item.name}
+                                    </span>
+
+                                    {employeeMenuOpen ? (
+                                        <ChevronDownIcon className="w-4 h-4" />
+                                    ) : (
+                                        <ChevronRightIcon className="w-4 h-4" />
+                                    )}
+                                </button>
+
+                                {employeeMenuOpen && (
+                                    <div className="ml-6 mt-1 space-y-1">
+                                        {item.children.map((child) => {
+                                            const active = pathname === child.href;
+
+                                            return (
+                                                <Link
+                                                    key={child.name}
+                                                    to={child.href}
+                                                    className={`group relative flex items-center gap-3 px-3 py-2 rounded-md text-[13px] font-medium transition-all duration-150 ${
+                                                        active
+                                                            ? "bg-indigo-500/12 text-indigo-300"
+                                                            : "text-slate-400 hover:text-white hover:bg-white/4"
+                                                    }`}
+                                                >
+                                                    {active && (
+                                                        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-4 rounded-r-full bg-indigo-500" />
+                                                    )}
+
+                                                    <child.icon
+                                                        className={`w-4 h-4 ${
+                                                            active
+                                                                ? "text-indigo-300"
+                                                                : "text-slate-400 group-hover:text-slate-300"
+                                                        }`}
+                                                    />
+
+                                                    <span className="flex-1">
+                                                        {child.name}
+                                                    </span>
+
+                                                    {active && (
+                                                        <ChevronRightIcon className="w-3.5 h-3.5 text-indigo-500/50" />
+                                                    )}
+                                                </Link>
+                                            );
+                                        })}
+                                    </div>
+                                )}
+                            </div>
+                        );
+                    }
+
+                    const isActive = pathname === item.href;
+
                     return (
-                        <Link key={item.name} to={item.href} className={`group flex items-center gap-3 px-3 py-2.5 rounded-md text-[13px] font-medium transition-all duration-150 relative ${isActive ? "bg-indigo-500/12 text-indigo-300" : "text-slate-300 hover:text-white hover:bg-white/4"}`}>
-                            {isActive && <div
-                            className='absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-indigo-500'/>}
-                            <item.icon className={`w-[17px] h-[17px] shrink-0 ${isActive? "text-indigo-300" : "text-slate-400 group-hover:text-slate-300"}`}/>
-                            <span className='flex-1'>
-                                {item.name}
-                            </span>
-                            {isActive && <ChevronRightIcon className='w-3.5 h-3.5 text-indigo-500/50'/>}
+                        <Link
+                            key={item.name}
+                            to={item.href}
+                            className={`group flex items-center gap-3 px-3 py-2.5 rounded-md text-[13px] font-medium transition-all duration-150 relative ${isActive
+                                    ? "bg-indigo-500/12 text-indigo-300"
+                                    : "text-slate-300 hover:text-white hover:bg-white/4"
+                                }`}
+                        >
+                            {isActive && (
+                                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-indigo-500" />
+                            )}
+
+                            <item.icon
+                                className={`w-[17px] h-[17px] ${isActive
+                                        ? "text-indigo-300"
+                                        : "text-slate-400 group-hover:text-slate-300"
+                                    }`}
+                            />
+
+                            <span className="flex-1">{item.name}</span>
+
+                            {isActive && (
+                                <ChevronRightIcon className="w-3.5 h-3.5 text-indigo-500/50" />
+                            )}
                         </Link>
-                    )
+                    );
                 })}
 
             </div>
@@ -113,9 +219,9 @@ const SideBar = () => {
                 <button
                     type="button"
                     onClick={handleLogout}
-                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-[13px] font-medium text-slate-400 hover:text-rose-400 hover:bg-rose-500/8 transition-all duration-150"                   
+                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-[13px] font-medium text-slate-400 hover:text-rose-400 hover:bg-rose-500/8 transition-all duration-150"
                 >
-                    <LogOutIcon className='w-[17px] h-[17px]'/>
+                    <LogOutIcon className='w-[17px] h-[17px]' />
                     <span>
                         Log out
                     </span>
@@ -125,39 +231,39 @@ const SideBar = () => {
         </>
     )
 
-  return (
-    <>
-        {/* Mobile hamburger button */}
-        <button 
-            className='lg:hidden fixed top-4 left-4 z-50 p-2 bg-slate-900 text-white rounded-lg shadow-lg border border-white/10'
-            onClick={() => setMobileOpen(true)}
-        >
-            <MenuIcon  size={20}/>
-        </button>
-
-        {/* Mobile Overlay */}
-        {mobileOpen && (
-            <div
-                className='lg:hidden fixed inset-0 bg-black/60 z-40 backdrop-blur-sm'
-                onClick={() => setMobileOpen(false)}
+    return (
+        <>
+            {/* Mobile hamburger button */}
+            <button
+                className='lg:hidden fixed top-4 left-4 z-50 p-2 bg-slate-900 text-white rounded-lg shadow-lg border border-white/10'
+                onClick={() => setMobileOpen(true)}
             >
-            </div>
-        )}
+                <MenuIcon size={20} />
+            </button>
 
-        {/* Sidebar Desktop */}
-        <aside className='hidden lg:flex flex-col h-full w-65 bg-linear-to-b from-slate-900 via-slate-900 to-slate-950 text-white shrink-0 border-r border-white/4'>
-            {sideBarContent}
-        </aside>
+            {/* Mobile Overlay */}
+            {mobileOpen && (
+                <div
+                    className='lg:hidden fixed inset-0 bg-black/60 z-40 backdrop-blur-sm'
+                    onClick={() => setMobileOpen(false)}
+                >
+                </div>
+            )}
 
-        {/* Sidebar Mobile */}
-        <aside className={`lg:hidden fixed inset-y-0 left-0 w-72 bg-slate-900 text-white z-50 flex flex-col transform transition-transform duration-300 
-            ${ mobileOpen ? "translate-x-0" : "-translate-x-full" }`}
-        >
-            {sideBarContent}
-        </aside>
+            {/* Sidebar Desktop */}
+            <aside className='hidden lg:flex flex-col h-full w-65 bg-linear-to-b from-slate-900 via-slate-900 to-slate-950 text-white shrink-0 border-r border-white/4'>
+                {sideBarContent}
+            </aside>
 
-    </>
-  )
+            {/* Sidebar Mobile */}
+            <aside className={`lg:hidden fixed inset-y-0 left-0 w-72 bg-slate-900 text-white z-50 flex flex-col transform transition-transform duration-300 
+            ${mobileOpen ? "translate-x-0" : "-translate-x-full"}`}
+            >
+                {sideBarContent}
+            </aside>
+
+        </>
+    )
 }
 
 export default SideBar

@@ -3,7 +3,6 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import Dashboard from "./pages/Dashboard";
 import Layout from "./pages/Layout";
 import LoginLanding from "./pages/LoginLanding";
-import Employees from "./pages/Employees";
 import Payslips from "./pages/Payslips";
 import Settings from "./pages/Settings";
 import Attendance from "./pages/Attendance";
@@ -11,6 +10,10 @@ import Leave from "./pages/Leave";
 import PrintPayslip from "./pages/PrintPayslip";
 import LoginForm from "./components/LoginForm";
 import RegisterOrganization from "./pages/RegisterOrganization";
+import Employees from "./pages/employees/Employees";
+import EmployeeAttendance from "./pages/employees/EmployeeAttendance";
+import EmployeeLeaves from "./pages/employees/EmployeeLeaves";
+import EmployeePayslips from "./pages/employees/EmployeePayslips";
 
 const App = () => {
   return (
@@ -37,7 +40,11 @@ const App = () => {
         />
         <Route element={<Layout />}>
           <Route path="/dashboard" element={<Dashboard />} />
+
           <Route path="/employees" element={<Employees />} />
+          <Route path="/employees/attendance" element={<EmployeeAttendance />} />
+          <Route path="/employees/leaves" element={<EmployeeLeaves />} />
+
           <Route path="/payslips" element={<Payslips />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/attendance" element={<Attendance />} />

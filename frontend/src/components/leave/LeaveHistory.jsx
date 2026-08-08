@@ -2,7 +2,7 @@ import { Check, Loader2, Loader2Icon, X } from 'lucide-react';
 import React, { useState } from 'react'
 import { format } from 'date-fns';
 
-const LeaveHistory = ({leaves, isAdmin, onUpdate}) => {
+const LeaveHistory = ({leaves, isManagerAdmin, onUpdate}) => {
     const [processing, setProcessing] = useState(null);
 
     const handleStatusUpdate = async(id, status) => {
@@ -18,12 +18,12 @@ const LeaveHistory = ({leaves, isAdmin, onUpdate}) => {
             <table className='table-modern'>
                 <thead>
                     <tr>
-                        {isAdmin && <th>Employee</th>}
+                        {isManagerAdmin && <th>Employee</th>}
                         <th>Type</th>
                         <th>Dates</th>
                         <th>Reason</th>
                         <th>Status</th>
-                        {isAdmin && 
+                        {isManagerAdmin && 
                             <th className='text-center'>Actions</th>
                         }
                     </tr>
@@ -33,7 +33,7 @@ const LeaveHistory = ({leaves, isAdmin, onUpdate}) => {
                         <tr>
                             <td 
                                 className='text-center py-12 text-slate-400'
-                                colSpan={isAdmin ? 6 : 4}
+                                colSpan={isManagerAdmin ? 6 : 4}
                                 >
                                 No leave applications found
                             </td>
@@ -42,7 +42,7 @@ const LeaveHistory = ({leaves, isAdmin, onUpdate}) => {
                         leaves.map((leave) => {
                             return (
                                 <tr key={leave._id || leave.id}>
-                                    {isAdmin && (
+                                    {isManagerAdmin && (
                                         <td className='text-slate-900'>
                                             {leave.employee?.firstName} 
                                             {leave.employee?.lastName}
@@ -71,7 +71,7 @@ const LeaveHistory = ({leaves, isAdmin, onUpdate}) => {
                                         </span>
                                     </td>
 
-                                    {isAdmin && (
+                                    {isManagerAdmin && (
                                         <td>
                                             {leave.status === "PENDING" && (
                                                 <div className='flex justify-center gap-2'>

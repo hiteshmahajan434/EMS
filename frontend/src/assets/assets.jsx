@@ -349,20 +349,21 @@ export const dummyAttendanceData = {
 
 
 export function getWorkingHoursDisplay(record) {
-    if (record.workingHours != null) {
-        const hrs = Math.floor(record.workingHours);
-        const mins = Math.round((record.workingHours - hrs) * 60);
-        return `${hrs}h ${mins}m`;
-    }
-    // If still checked in (no checkout), compute live hours
-    if (record.checkIn && !record.checkOut) {
-        const diffMs = Date.now() - new Date(record.checkIn).getTime();
-        const diffHours = diffMs / (1000 * 60 * 60);
-        const hrs = Math.floor(diffHours);
-        const mins = Math.round((diffHours - hrs) * 60);
-        return `${hrs}h ${mins}m (ongoing)`;
-    }
-    return "—";
+  if (!record.checkIn) { return "—"; }
+
+  const start = new Date(record.checkIn);
+  const end = record.checkOut
+    ? new Date(record.checkOut)
+    : new Date();
+
+  const totalMinutes = Math.floor((end - start) / (1000 * 60));
+
+  const hrs = Math.floor(totalMinutes / 60);
+  const mins = totalMinutes % 60;
+
+  return record.checkOut
+    ? `${hrs}h ${mins}m`
+    : `${hrs}h ${mins}m (ongoing)`;
 }
 
 export function getDayTypeDisplay(record) {
@@ -383,3 +384,145 @@ export function getDayTypeDisplay(record) {
     }
     return { label: "—", className: "" };
 }
+
+export const dummyEmployeeAttendance = [
+  {
+    id: 1,
+    employeeId: "EMP001",
+    firstName: "John",
+    lastName: "Doe",
+    department: "Engineering",
+    date: "2026-08-07T00:00:00.000Z",
+    checkIn: "2026-08-07T09:02:15.347Z",
+    checkOut: "2026-08-07T18:14:40.122Z",
+    status: "Present",
+  },
+  {
+    id: 2,
+    employeeId: "EMP002",
+    firstName: "Rahul",
+    lastName: "Sharma",
+    department: "Engineering",
+    date: "2026-08-07T00:00:00.000Z",
+    checkIn: "2026-08-07T09:18:32.541Z",
+    checkOut: null,
+    status: "Working",
+  },
+  {
+    id: 3,
+    employeeId: "EMP003",
+    firstName: "Priya",
+    lastName: "Patil",
+    department: "Human Resources",
+    date: "2026-08-07T00:00:00.000Z",
+    checkIn: null,
+    checkOut: null,
+    status: "Absent",
+  },
+  {
+    id: 4,
+    employeeId: "EMP004",
+    firstName: "Amit",
+    lastName: "Joshi",
+    department: "Finance",
+    date: "2026-08-07T00:00:00.000Z",
+    checkIn: null,
+    checkOut: null,
+    status: "On Leave",
+  },
+  {
+    id: 5,
+    employeeId: "EMP005",
+    firstName: "Sneha",
+    lastName: "Kulkarni",
+    department: "Marketing",
+    date: "2026-08-07T00:00:00.000Z",
+    checkIn: "2026-08-07T08:56:11.128Z",
+    checkOut: "2026-08-07T17:47:53.002Z",
+    status: "Present",
+  },
+  {
+    id: 6,
+    employeeId: "EMP006",
+    firstName: "Karan",
+    lastName: "Mehta",
+    department: "Sales",
+    date: "2026-08-07T00:00:00.000Z",
+    checkIn: "2026-08-07T09:11:46.934Z",
+    checkOut: "2026-08-07T18:05:18.451Z",
+    status: "Present",
+  },
+  {
+    id: 7,
+    employeeId: "EMP007",
+    firstName: "Neha",
+    lastName: "Gupta",
+    department: "Engineering",
+    date: "2026-08-07T00:00:00.000Z",
+    checkIn: "2026-08-07T09:25:03.618Z",
+    checkOut: null,
+    status: "Working",
+  },
+  {
+    id: 8,
+    employeeId: "EMP008",
+    firstName: "Arjun",
+    lastName: "Patel",
+    department: "Support",
+    date: "2026-08-07T00:00:00.000Z",
+    checkIn: null,
+    checkOut: null,
+    status: "Absent",
+  },
+];
+
+export const dummyManagerDashboardData = {
+    stats: {
+        teamMembers: 14,
+        presentToday: 11,
+        onLeave: 2,
+        lateToday: 1,
+        pendingLeaves: 3,
+    },
+
+    pendingLeaveRequests: [
+        {
+            _id: "leave001",
+            userId: {
+                _id: "emp001",
+                firstName: "Rahul",
+                lastName: "Sharma",
+            },
+            leaveType: "Casual Leave",
+            startDate: "2026-08-10T00:00:00.000Z",
+            endDate: "2026-08-11T00:00:00.000Z",
+            status: "PENDING",
+        },
+
+        {
+            _id: "leave002",
+            userId: {
+                _id: "emp002",
+                firstName: "Amit",
+                lastName: "Patil",
+            },
+            leaveType: "Sick Leave",
+            startDate: "2026-08-12T00:00:00.000Z",
+            endDate: "2026-08-12T00:00:00.000Z",
+            status: "PENDING",
+        },
+
+        {
+            _id: "leave003",
+            userId: {
+                _id: "emp003",
+                firstName: "Sneha",
+                lastName: "Kulkarni",
+            },
+            leaveType: "Earned Leave",
+            startDate: "2026-08-15T00:00:00.000Z",
+            endDate: "2026-08-17T00:00:00.000Z",
+            status: "PENDING",
+        },
+    ],
+};
