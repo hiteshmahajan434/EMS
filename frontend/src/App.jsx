@@ -13,7 +13,6 @@ import RegisterOrganization from "./pages/RegisterOrganization";
 import Employees from "./pages/employees/Employees";
 import EmployeeAttendance from "./pages/employees/EmployeeAttendance";
 import EmployeeLeaves from "./pages/employees/EmployeeLeaves";
-import EmployeePayslips from "./pages/employees/EmployeePayslips";
 
 const App = () => {
   return (

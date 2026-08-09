@@ -10,8 +10,10 @@ const SideBar = () => {
     const { pathname } = useLocation();
     const [userName, setUserName] = useState("");
     const [mobileOpen, setMobileOpen] = useState(false);
-    const [employeeMenuOpen, setEmployeeMenuOpen] = useState(
-    pathname.startsWith("/employees")
+    const [managementMenuOpen, setManagementMenuOpen] = useState(
+        pathname.startsWith("/employees") ||
+        pathname.startsWith("/managers") ||
+        pathname.startsWith("/admin")
     );
 
     useEffect(() => {
@@ -24,23 +26,38 @@ const SideBar = () => {
     }, [pathname]);
 
     // Keep Manage Employees expanded on employee pages
+    // Keep Management Menu expanded for admin
     useEffect(() => {
-    setEmployeeMenuOpen(pathname.startsWith("/employees"));
+        setManagementMenuOpen(
+            pathname.startsWith("/employees") ||
+            pathname.startsWith("/managers") ||
+            pathname.startsWith("/admin")
+        );
     }, [pathname]);
 
-    const role = "MANAGER" || "EMPLOYEE";
+    const role = "ADMIN" || "MANAGER" || "EMPLOYEE";
 
     const navItems =
-        role === "MANAGER"
+        role === "ADMIN"
+        ? [
+            {name: "Dashboard", href: "/dashboard", icon: LayoutGridIcon },
+            {name: "Manage Organization", icon: UsersIcon, children: [
+                    { name: "Employees", href: "/employees", icon: UserIcon },
+                    { name: "Managers", href: "/managers", icon: UsersIcon },
+                    { name: "Attendance", href: "/admin/attendance", icon: ClipboardCheckIcon },
+                    { name: "Manager Leaves", href: "/admin/manager-leaves", icon: FileTextIcon },
+                    { name: "Payslips", href: "/admin/payslips", icon: WalletCardsIcon }
+                ]
+            },
+            { name: "Settings", href: "/settings", icon: SettingsIcon}
+        ]
+        : role === "MANAGER"
             ? [
                 { name: "Dashboard", href: "/dashboard", icon: LayoutGridIcon },
                 { name: "Attendance", href: "/attendance", icon: CalendarIcon },
                 { name: "Leaves", href: "/leave", icon: FileTextIcon },
                 { name: "Payslips", href: "/payslips", icon: DollarSignIcon },
-                {
-                    name: "Manage Employees",
-                    icon: UsersIcon,
-                    children: [
+                { name: "Manage Employees", icon: UsersIcon, children: [
                         { name: "Employees", href: "/employees", icon: UserIcon },
                         { name: "Attendance", href: "/employees/attendance", icon: ClipboardCheckIcon },
                         { name: "Leaves", href: "/employees/leaves", icon: FileTextIcon },
@@ -122,7 +139,7 @@ const SideBar = () => {
                             <div key={item.name}>
                                 <button
                                     type="button"
-                                    onClick={() => setEmployeeMenuOpen(!employeeMenuOpen)}
+                                    onClick={() => setManagementMenuOpen(!managementMenuOpen)}
                                     className="group w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-[13px] font-medium text-slate-300 hover:text-white hover:bg-white/4 transition-all"
                                 >
                                     <item.icon className="w-[17px] h-[17px] text-slate-400" />
@@ -131,14 +148,14 @@ const SideBar = () => {
                                         {item.name}
                                     </span>
 
-                                    {employeeMenuOpen ? (
+                                    {managementMenuOpen ? (
                                         <ChevronDownIcon className="w-4 h-4" />
                                     ) : (
                                         <ChevronRightIcon className="w-4 h-4" />
                                     )}
                                 </button>
 
-                                {employeeMenuOpen && (
+                                {managementMenuOpen && (
                                     <div className="ml-6 mt-1 space-y-1">
                                         {item.children.map((child) => {
                                             const active = pathname === child.href;
