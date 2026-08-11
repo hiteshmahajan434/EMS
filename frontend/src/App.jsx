@@ -13,6 +13,10 @@ import RegisterOrganization from "./pages/RegisterOrganization";
 import Employees from "./pages/employees/Employees";
 import EmployeeAttendance from "./pages/employees/EmployeeAttendance";
 import EmployeeLeaves from "./pages/employees/EmployeeLeaves";
+import Managers from "./pages/admin-pages/Managers";
+import AdminAttendance from "./pages/admin-pages/AdminAttendance";
+import ManagerLeaves from "./pages/admin-pages/ManagerLeaves";
+import AdminPayslips from "./pages/admin-pages/AdminPayslips";
 
 const App = () => {
   return (
@@ -48,6 +52,11 @@ const App = () => {
           <Route path="/settings" element={<Settings />} />
           <Route path="/attendance" element={<Attendance />} />
           <Route path="/leave" element={<Leave />} />
+
+          <Route path="/managers" element={<Managers />} />
+          <Route path="/admin/attendance" element={<AdminAttendance />} />
+          <Route path="/admin/manager-leaves" element={<ManagerLeaves />} />
+          <Route path="/admin/payslips" element={<AdminPayslips />} />
         </Route>
         <Route path="/print/payslips/:id" element={<PrintPayslip />} />
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
