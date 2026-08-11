@@ -12,11 +12,12 @@ const Dashboard = () => {
 
     useEffect(() => {
         // For testing manager dashboard
-        setEmployeeData({
-            ...dummyEmployeeDashboardData,
-            role: "MANAGER",
-        });
-        setManagerData(dummyManagerDashboardData);
+        // setEmployeeData({
+        //     ...dummyEmployeeDashboardData,
+        //     role: "MANAGER",
+        // });
+        // setManagerData(dummyManagerDashboardData);
+        setEmployeeData(dummyAdminDashboardData);
 
         setTimeout(() => {
             setLoading(false);
@@ -48,7 +49,7 @@ const Dashboard = () => {
 
     // Admin
     if (employeeData.role === "ADMIN") {
-        return <AdminDashboard data={dummyAdminDashboardData} />;
+        return <AdminDashboard data={employeeData} />;
     }
 
     // Employee

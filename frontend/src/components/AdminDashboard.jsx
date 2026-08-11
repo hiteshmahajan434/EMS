@@ -1,5 +1,6 @@
-import { Building2Icon, CalendarIcon, FileTextIcon, UsersIcon } from 'lucide-react'
+import { CalendarIcon, ClockIcon, UserCheckIcon, UsersIcon, User } from 'lucide-react'
 import React from 'react'
+import PageHero from './layout/PageHero'
 
 const AdminDashboard = ({data}) => {
     const stats = [
@@ -10,35 +11,32 @@ const AdminDashboard = ({data}) => {
             description: "Active workforce"
         },
         {
-            icon: Building2Icon,
-            value: data.totalDepartments,
-            label: "Departments",
-            description: "Organization units"
-        },
-        {
-            icon: CalendarIcon,
-            value: data.todayAttendance,
+            icon: UserCheckIcon,
+            value: data.presentToday,
             label: "Today's Attendance",
             description: "Checked in today"
         },
         {
-            icon: FileTextIcon,
-            value: data.pendingLeaves,
+            icon: CalendarIcon,
+            value: data.onLeave,
+            label: "On Leave",
+            description: "Not available"
+        },
+        {
+            icon: ClockIcon,
+            value: data.pendingManagerLeaves,
             label: "Pending Leaves",
-            description: "Awaiting approval"
+            description: "Manager's awaiting approval"
         },
     ]
 
     return (
         <div className='animate-fade-in'>
-            <div className='page-header'>
-                <h1 className='page-title'>
-                    Dashboard
-                </h1>
-                <p className='page-subtitle'>
-                    Welcome back, Admin - here's your overview
-                </p>
-            </div>
+            <PageHero
+                icon={User}
+                title={"Welcome back, Admin!"}
+                subtitle={"Here's your work summary for today."}
+            />
 
             <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5 mb-8'>
                 {stats.map((s) => (
@@ -54,9 +52,9 @@ const AdminDashboard = ({data}) => {
                             <p className='text-2xl font-bold text-slate-900'>
                                 {s.value}
                             </p>
-                            {/* <p className="text-xs text-slate-500 mt-1">
-                                {card.subtitle}
-                            </p> */}
+                            <p className="text-xs text-slate-500 mt-1">
+                                {s.description}
+                            </p>
                         </div>
                         <s.icon className='size-10 p-2.5 rounded-lg bg-slate-100  text-slate-600 group-hover:bg-indigo-50  group-hover:text-indigo-600 transition-colors duration-200'/>
                     </div>
