@@ -240,3 +240,38 @@ export const getAdminDashboard = async (req, res) => {
         });
     }
 };
+
+export const getDashboard = async (req, res) => {
+    try {
+        const role = req.user.role;
+
+        if (role === "employee") {
+            const data = await getEmployeeDashboardData(req);
+            return res.status(200).json(data);
+        }
+        if (role === "manager") {
+            const employeeData = await getEmployeeDashboardData(req);
+            const managerData = await getManagerDashboardData(req);
+
+            return res.status(200).json({
+                employeeData,
+                managerData
+            });
+        }
+        if (role === "admin") {
+            const data = await getAdminDashboardData(req);
+
+            return res.status(200).json(data);
+        }
+
+        return res.status(403).json({
+            error: "Invalid user role"
+        });
+
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            error: "Failed to fetch dashboard"
+        });
+    }
+};
