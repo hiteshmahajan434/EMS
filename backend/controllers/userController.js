@@ -35,7 +35,7 @@ export const getUsers = async (req, res) => {
 }
 
 //Create Users
-//POST /api/user
+//POST /api/users
 // Read request body
 // Validate required fields
 // Check permissions (admin/manager)
@@ -105,7 +105,7 @@ export const createUser = async (req, res) => {
 }
 
 //Update user
-//PUT /api/user/:id
+//PUT /api/users/:id
 // Get employee ID
 // Find employee
 // Verify ownership/permissions
@@ -175,7 +175,7 @@ export const updateUser = async (req, res) => {
 }
 
 //Delete User
-//DELETE /api/user/:id
+//DELETE /api/users/:id
 // Get employee ID
 // Find employee
 // Verify ownership

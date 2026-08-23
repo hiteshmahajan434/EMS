@@ -61,6 +61,7 @@ export const createLeave = async (req, res) => {
 
         return res.json({success: true, data: newLeave});        
     } catch (error) {
+        console.log(error);
         return res.status(500).json({error: "Leave creation failed"});
     }
 }
@@ -201,6 +202,7 @@ export const updateLeave = async (req, res) => {
         
         return res.json({success: true, data: leave});
     } catch (error) {
+        console.log(error);
         return res.status(500).json({ error: "Failed to update leave" });
     }
 }

@@ -2,7 +2,7 @@ import User from "../models/User.js";
 import Attendance from "../models/Attendance.js";
 
 //Clock in out for employee/manager
-//POST /api/attendance
+//POST /api/attendance/clock
 export const clockInOut = async (req, res) => {
     try {
         const userId = req.user.id;

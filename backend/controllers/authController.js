@@ -151,6 +151,7 @@ export const changePassword = async (req, res) => {
 
         return res.json({success: true});
     } catch (error) {
+        console.log(error);
         return res.status(500).json({ error: "Failed to change password" });
     }
 }

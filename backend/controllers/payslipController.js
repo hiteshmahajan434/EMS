@@ -126,7 +126,7 @@ export const getMyPayslips = async (req, res) => {
     }
 }
 
-//Get payslip by ID
+//Get payslip by  payslip ID
 //GET /api/payslip/:id
 export const getPayslipByID = async (req, res) => {
     try {
