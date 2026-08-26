@@ -1,8 +1,10 @@
 import React, { useState } from 'react'
 import LoginLeftSide from './LoginLeftSide'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { ArrowLeftIcon, EyeIcon, EyeOffIcon, Loader2Icon } from 'lucide-react'
 import RegisterOrganizationModal from "./register-organization/RegisterOrganizationModal";
+import { useAuth } from '../context/AuthContext';
+import toast from 'react-hot-toast';
 
 const LoginForm = ({role, title, subtitle}) => {
 
@@ -13,8 +15,22 @@ const LoginForm = ({role, title, subtitle}) => {
     const [loading, setLoading] = useState(false);
     const [openRegister, setOpenRegister] = useState(false);
 
+    const {login} = useAuth();
+    const navigate = useNavigate();
+
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setError("");
+        setLoading(true);
+        try {
+            await login(email, password);
+            navigate("/dashboard");
+        } catch (error) {
+            toast.error(error.response?.data?.error || error.message || "Login failed");
+        }
+        finally{
+            setLoading(false);
+        }
     }
 
   return (

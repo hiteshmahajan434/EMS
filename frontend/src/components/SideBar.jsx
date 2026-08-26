@@ -1,14 +1,15 @@
 import React, { useEffect, useState } from 'react'
-import { Link, useLocation } from 'react-router-dom'
-import { dummyProfileData } from '../assets/assets';
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import {
     CalendarIcon, ChevronDownIcon, ChevronRightIcon, DollarSignIcon, FileTextIcon, LayoutGridIcon, LogOutIcon, MenuIcon, SettingsIcon,
-    UserIcon, UsersIcon, ClipboardCheckIcon, WalletCardsIcon, XIcon
+    UserIcon, UsersIcon, ClipboardCheckIcon, WalletCardsIcon, XIcon,
+    Loader2
 } from "lucide-react";
+import { useAuth } from '../context/AuthContext';
 
 const SideBar = () => {
     const { pathname } = useLocation();
-    const [userName, setUserName] = useState("");
+    const navigate = useNavigate();
     const [mobileOpen, setMobileOpen] = useState(false);
     const [managementMenuOpen, setManagementMenuOpen] = useState(
         pathname.startsWith("/employees") ||
@@ -16,9 +17,11 @@ const SideBar = () => {
         pathname.startsWith("/admin")
     );
 
-    useEffect(() => {
-        setUserName(dummyProfileData.firstName + " " + dummyProfileData.lastName)
-    }, []);
+    const {user, loading, logout} = useAuth();
+
+    const userName = user
+        ? `${user.firstName} ${user.lastName || ""}`.trim()
+        : "";
 
     // Close mobile sidebar on route change
     useEffect(() => {
@@ -35,10 +38,10 @@ const SideBar = () => {
         );
     }, [pathname]);
 
-    const role = "ADMIN" || "MANAGER" || "EMPLOYEE";
+    const role = user?.role;
 
     const navItems =
-        role === "ADMIN"
+        role === "admin"
         ? [
             {name: "Dashboard", href: "/dashboard", icon: LayoutGridIcon },
             {name: "Manage Organization", icon: UsersIcon, children: [
@@ -51,7 +54,7 @@ const SideBar = () => {
             },
             { name: "Settings", href: "/settings", icon: SettingsIcon}
         ]
-        : role === "MANAGER"
+        : role === "manager"
             ? [
                 { name: "Dashboard", href: "/dashboard", icon: LayoutGridIcon },
                 { name: "Attendance", href: "/attendance", icon: CalendarIcon },
@@ -74,7 +77,8 @@ const SideBar = () => {
             ];
 
     const handleLogout = () => {
-        window.location.href = "/login"
+        logout();
+        navigate("/login");
     }
 
     const sideBarContent = (
@@ -117,7 +121,7 @@ const SideBar = () => {
                                 {userName}
                             </p>
                             <p className="text-[11px] text-slate-500 truncate">
-                                {role === "ADMIN"? "Administrator": role === "MANAGER"? "Manager": "Employee"}
+                                {role === "admin"? "Administrator": role === "manager"? "Manager": "Employee"}
                             </p>
                         </div>
                     </div>
@@ -133,101 +137,109 @@ const SideBar = () => {
 
             {/* Navigation List */}
             <div className='flex-1 px-3 space-y-0.5 overflow-y-auto'>
-                {navItems.map((item) => {
-                    if (item.children) {
-                        return (
-                            <div key={item.name}>
-                                <button
-                                    type="button"
-                                    onClick={() => setManagementMenuOpen(!managementMenuOpen)}
-                                    className="group w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-[13px] font-medium text-slate-300 hover:text-white hover:bg-white/4 transition-all"
-                                >
-                                    <item.icon className="w-[17px] h-[17px] text-slate-400" />
+                {loading ? (
+                    <div className='px-3 py-3 flex items-center gap-2 text-slate-500'>
+                        <Loader2 className='animate-spin w-4 h-4'/>
+                        <span className='text-sm'>Loading...</span>
+                    </div>
+                ) : (
+                    navItems.map((item) => {
+                        if (item.children) {
+                            return (
+                                <div key={item.name}>
+                                    <button
+                                        type="button"
+                                        onClick={() => setManagementMenuOpen(!managementMenuOpen)}
+                                        className="group w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-[13px] font-medium text-slate-300 hover:text-white hover:bg-white/4 transition-all"
+                                    >
+                                        <item.icon className="w-[17px] h-[17px] text-slate-400" />
 
-                                    <span className="flex-1 text-left">
-                                        {item.name}
-                                    </span>
+                                        <span className="flex-1 text-left">
+                                            {item.name}
+                                        </span>
 
-                                    {managementMenuOpen ? (
-                                        <ChevronDownIcon className="w-4 h-4" />
-                                    ) : (
-                                        <ChevronRightIcon className="w-4 h-4" />
-                                    )}
-                                </button>
+                                        {managementMenuOpen ? (
+                                            <ChevronDownIcon className="w-4 h-4" />
+                                        ) : (
+                                            <ChevronRightIcon className="w-4 h-4" />
+                                        )}
+                                    </button>
 
-                                {managementMenuOpen && (
-                                    <div className="ml-6 mt-1 space-y-1">
-                                        {item.children.map((child) => {
-                                            const active = pathname === child.href;
+                                    {managementMenuOpen && (
+                                        <div className="ml-6 mt-1 space-y-1">
+                                            {item.children.map((child) => {
+                                                const active = pathname === child.href;
 
-                                            return (
-                                                <Link
-                                                    key={child.name}
-                                                    to={child.href}
-                                                    className={`group relative flex items-center gap-3 px-3 py-2 rounded-md text-[13px] font-medium transition-all duration-150 ${
-                                                        active
-                                                            ? "bg-indigo-500/12 text-indigo-300"
-                                                            : "text-slate-400 hover:text-white hover:bg-white/4"
-                                                    }`}
-                                                >
-                                                    {active && (
-                                                        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-4 rounded-r-full bg-indigo-500" />
-                                                    )}
-
-                                                    <child.icon
-                                                        className={`w-4 h-4 ${
+                                                return (
+                                                    <Link
+                                                        key={child.name}
+                                                        to={child.href}
+                                                        className={`group relative flex items-center gap-3 px-3 py-2 rounded-md text-[13px] font-medium transition-all duration-150 ${
                                                             active
-                                                                ? "text-indigo-300"
-                                                                : "text-slate-400 group-hover:text-slate-300"
+                                                                ? "bg-indigo-500/12 text-indigo-300"
+                                                                : "text-slate-400 hover:text-white hover:bg-white/4"
                                                         }`}
-                                                    />
+                                                    >
+                                                        {active && (
+                                                            <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-4 rounded-r-full bg-indigo-500" />
+                                                        )}
 
-                                                    <span className="flex-1">
-                                                        {child.name}
-                                                    </span>
+                                                        <child.icon
+                                                            className={`w-4 h-4 ${
+                                                                active
+                                                                    ? "text-indigo-300"
+                                                                    : "text-slate-400 group-hover:text-slate-300"
+                                                            }`}
+                                                        />
 
-                                                    {active && (
-                                                        <ChevronRightIcon className="w-3.5 h-3.5 text-indigo-500/50" />
-                                                    )}
-                                                </Link>
-                                            );
-                                        })}
-                                    </div>
-                                )}
-                            </div>
-                        );
-                    }
+                                                        <span className="flex-1">
+                                                            {child.name}
+                                                        </span>
 
-                    const isActive = pathname === item.href;
+                                                        {active && (
+                                                            <ChevronRightIcon className="w-3.5 h-3.5 text-indigo-500/50" />
+                                                        )}
+                                                    </Link>
+                                                );
+                                            })}
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        }
 
-                    return (
-                        <Link
-                            key={item.name}
-                            to={item.href}
-                            className={`group flex items-center gap-3 px-3 py-2.5 rounded-md text-[13px] font-medium transition-all duration-150 relative ${isActive
-                                    ? "bg-indigo-500/12 text-indigo-300"
-                                    : "text-slate-300 hover:text-white hover:bg-white/4"
-                                }`}
-                        >
-                            {isActive && (
-                                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-indigo-500" />
-                            )}
+                        const isActive = pathname === item.href;
 
-                            <item.icon
-                                className={`w-[17px] h-[17px] ${isActive
-                                        ? "text-indigo-300"
-                                        : "text-slate-400 group-hover:text-slate-300"
+                        return (
+                            <Link
+                                key={item.name}
+                                to={item.href}
+                                className={`group flex items-center gap-3 px-3 py-2.5 rounded-md text-[13px] font-medium transition-all duration-150 relative ${isActive
+                                        ? "bg-indigo-500/12 text-indigo-300"
+                                        : "text-slate-300 hover:text-white hover:bg-white/4"
                                     }`}
-                            />
+                            >
+                                {isActive && (
+                                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-indigo-500" />
+                                )}
 
-                            <span className="flex-1">{item.name}</span>
+                                <item.icon
+                                    className={`w-[17px] h-[17px] ${isActive
+                                            ? "text-indigo-300"
+                                            : "text-slate-400 group-hover:text-slate-300"
+                                        }`}
+                                />
 
-                            {isActive && (
-                                <ChevronRightIcon className="w-3.5 h-3.5 text-indigo-500/50" />
-                            )}
-                        </Link>
-                    );
-                })}
+                                <span className="flex-1">{item.name}</span>
+
+                                {isActive && (
+                                    <ChevronRightIcon className="w-3.5 h-3.5 text-indigo-500/50" />
+                                )}
+                            </Link>
+                        );
+                    })
+                )}
+
 
             </div>
 

@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react"
-import { dummyProfileData } from "../assets/assets";
 import Loading from "../components/Loading";
 import { Lock, Settings2 } from "lucide-react";
 import ProfileForm from "../components/ProfileForm";
 import ChangePassword from "../components/ChangePassword";
 import PageHero from "../components/layout/PageHero";
-
+import api from "../api/axios";
+import toast from "react-hot-toast";
 
 const Settings = () => {
   const [profile, setProfile] = useState(null);
@@ -13,15 +13,25 @@ const Settings = () => {
   const [showPasswordModal, setShowPasswordModal] = useState(false);
 
   const fetchProfile = async () => {
-    setProfile(dummyProfileData);
-    setTimeout(() => {
+    try {
+      setLoading(true);
+
+      const { data } = await api.get("/profile");
+
+      setProfile(data);
+    } catch (err) {
+      toast.error(
+        err.response?.data?.error ||
+        "Failed to load profile"
+      );
+    } finally {
       setLoading(false);
-    }, 1000);
-  }
+    }
+  };
 
   useEffect(() => {
     fetchProfile();
-  }, []);
+  }, []); 
 
   if(loading) return <Loading/>
 

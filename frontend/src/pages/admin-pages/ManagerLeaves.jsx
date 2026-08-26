@@ -1,20 +1,27 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { Calendar1Icon, CheckCircle2Icon, Clock3Icon, FileTextIcon, XCircleIcon } from "lucide-react";
-import { dummyLeaveData } from "../../assets/assets";
 import Loading from "../../components/Loading";
 import PageHero from "../../components/layout/PageHero";
 import LeaveHistory from "../../components/leave/LeaveHistory";
+import api from "../../api/axios";
 
 const ManagerLeaves = () => {
   const [leaves, setLeaves] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchLeaves = useCallback(() => {
-    setLeaves(dummyLeaveData);
+  const fetchLeaves = useCallback(async () => {
+    try {
+      setLoading(true);
 
-    setTimeout(() => {
+      const { data } = await api.get("/leave");
+
+      setLeaves(data.data || []);
+    } catch (error) {
+      console.error("Failed to fetch employee leaves:", error);
+      setLeaves([]);
+    } finally {
       setLoading(false);
-    }, 1000);
+    }
   }, []);
 
   useEffect(() => {

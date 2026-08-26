@@ -1,10 +1,12 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import LoginLeftSide from "../components/LoginLeftSide";
 import RegisterHeader from "../components/register-organization/RegisterHeader";
 import OrganizationForm from "../components/register-organization/OrganizationForm";
 import AdminAccountForm from "../components/register-organization/AdminAccountForm";
 import RegisterFooter from "../components/register-organization/RegisterFooter";
 import { useNavigate } from "react-router-dom";
+import api from "../api/axios";
+import toast from "react-hot-toast";
 
 const RegisterOrganization = () => {
   const navigate = useNavigate();
@@ -63,19 +65,19 @@ const RegisterOrganization = () => {
         },
       };
 
-      console.log(payload);
+      const { data } = await api.post(
+        "/auth/register-organization",
+        payload
+      );
 
-      // const { data } = await axios.post(
-      //   "/api/auth/register-organization",
-      //   payload
-      // );
+      toast.success(data.message);
 
-      // toast.success(data.message);
-      // navigate("/login/admin");
+      navigate("/login/admin");
 
     } catch (err) {
       setError(
-        err.response?.data?.error || "Failed to register organization."
+        err.response?.data?.error ||
+        "Failed to register organization."
       );
     } finally {
       setLoading(false);

@@ -1,32 +1,34 @@
 import { useCallback, useEffect, useState } from "react"
-import { dummyEmployeeData, dummyPayslipData } from "../assets/assets";
 import Loading from "../components/Loading";
 import PayslipsList from "../components/payslip/PayslipsList";
-import GeneratePayslipForm from "../components/payslip/GeneratePayslipForm";
 import PageHero from "../components/layout/PageHero";
 import { Receipt } from "lucide-react";
-
+import api from "../api/axios";
+import toast from "react-hot-toast";
 
 const Payslips = () => {
   const [payslips, setPayslips] = useState([]);
-  const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(true);
-  const isAdmin = false;
 
   const fetchPayslips = useCallback(async () => {
-    setPayslips(dummyPayslipData);
-    setTimeout(() => {
+    setLoading(true);
+
+    try {
+      const { data } = await api.get("/payslip");
+      setPayslips(data.payslips);
+    } catch (err) {
+      toast.error(
+        err.response?.data?.error ||
+        "Failed to load payslips"
+      );
+    } finally {
       setLoading(false);
-    }, 1000);
+    }
   }, []);
 
   useEffect(() => {
     fetchPayslips();
   }, [fetchPayslips]);
-
-  useEffect(() => {
-    if(isAdmin) setEmployees(dummyEmployeeData);
-  }, [isAdmin]);
 
   if(loading) return <Loading/>
 
@@ -36,14 +38,11 @@ const Payslips = () => {
       <PageHero
         icon={Receipt}
         title="Payslips"
-        subtitle={isAdmin ? "Generate payslips for your team and manage payroll records." 
-          : "Access your payslips and download them whenever needed."
-        }
+        subtitle= "Access your payslips and download them whenever needed."
       >
-        {isAdmin && <GeneratePayslipForm employees={employees} onSuccess={fetchPayslips}/>}
       </PageHero>
 
-      <PayslipsList payslips={payslips} isAdmin={isAdmin} />
+      <PayslipsList payslips={payslips} isAdmin={false} />
     </div>
   )
 }

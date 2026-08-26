@@ -4,6 +4,8 @@ import { Plus, Search, Users, X } from "lucide-react";
 import EmployeeCard from "../../components/EmployeeCard";
 import EmployeeForm from "../../components/EmployeeForm";
 import PageHero from "../../components/layout/PageHero";
+import api from "../../api/axios";
+import toast from "react-hot-toast";
 
 const Managers = () => {
     const [managers, setManagers] = useState([]);
@@ -14,30 +16,44 @@ const Managers = () => {
     const [showCreateModal, setShowCreateModal] = useState(false);
 
     const fetchManagers = useCallback(async () => {
-        setLoading(true);
+        try {
+            setLoading(true);
 
-        // Temporary dummy data
-        // Later we will replace this with GET /api/users?role=manager
-        setManagers(
-            dummyEmployeeData.filter((user) =>
-                selectedDept
-                    ? user.department === selectedDept
-                    : true
-            )
-        );
+            const params = {
+                role: "manager",
+            };
 
-        setLoading(false);
+            if (selectedDept) {
+                params.department = selectedDept;
+            }
+
+            const { data } = await api.get("/users", {
+                params,
+            });
+
+            setManagers(data.managers || []);
+
+        } catch (err) {
+            toast.error(
+                err.response?.data?.error ||
+                "Failed to fetch managers"
+            );
+        } finally {
+            setLoading(false);
+        }
     }, [selectedDept]);
 
     useEffect(() => {
         fetchManagers();
     }, [fetchManagers]);
 
+    // Search is handled on frontend
     const filtered = managers.filter((manager) =>
-        `${manager.firstName} ${manager.lastName} ${manager.position}`
+        `${manager.firstName} ${manager.lastName} ${manager.position || ""}`
             .toLowerCase()
             .includes(search.toLowerCase())
     );
+
 
     return (
         <div className="animate-fade-in">
@@ -110,7 +126,7 @@ const Managers = () => {
                     ) : (
                         filtered.map((manager) => (
                             <EmployeeCard
-                                key={manager.id}
+                                key={manager._id}
                                 employee={manager}
                                 onDelete={fetchManagers}
                                 onEdit={(manager) =>

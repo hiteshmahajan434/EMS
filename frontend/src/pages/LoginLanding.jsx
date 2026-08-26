@@ -1,8 +1,15 @@
 import { ArrowRightIcon, ShieldIcon, UserIcon } from "lucide-react"
 import LoginLeftSide from "../components/LoginLeftSide"
 import { Link, Navigate } from "react-router-dom"
+import { useAuth } from "../context/AuthContext"
+import Loading from "../components/Loading"
 
 const LoginLanding = () => {
+  const {user, loading} = useAuth();
+
+  if(loading) return <Loading/>
+  if(user) return <Navigate to="/dashboard" />
+
   const portalOptions = [
     {
       to: "/login/admin",
@@ -26,7 +33,7 @@ const LoginLanding = () => {
         <div className="w-full max-w-md animate-fade-in relative z-10">
 
           {/* Header */}
-          <div className="mb-10 text-center md-text-left">
+          <div className="mb-10 text-center md:text-left">
             <h2 className="text-3xl font-semibold text-slate-900">
               Welcome Back
             </h2>

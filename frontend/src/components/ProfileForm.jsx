@@ -1,5 +1,8 @@
 import { Loader2, Save, User } from 'lucide-react';
-import React, { useState } from 'react'
+import { useState } from 'react'
+import api from '../api/axios';
+import toast from 'react-hot-toast';
+
 
 const ProfileForm = ({initialData, onSuccess}) => {
     const [loading, setLoading] = useState(false);
@@ -8,8 +11,38 @@ const ProfileForm = ({initialData, onSuccess}) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-    }
 
+        setError("");
+        setMessage("");
+
+        try {
+            setLoading(true);
+
+            const payload = {
+                bio: e.target.bio.value
+            };
+
+            const { data } = await api.put("/profile", payload);
+
+            setMessage(data.message);
+
+            toast.success(data.message);
+
+            onSuccess?.();
+
+        } catch (err) {
+            const errorMessage =
+                err.response?.data?.error ||
+                "Failed to update profile";
+
+            setError(errorMessage);
+
+            toast.error(errorMessage);
+
+        } finally {
+            setLoading(false);
+        }
+    };
   return (
     <form onSubmit={handleSubmit} className='card p-5 sm:p-6 mb-6'>
         <h2 className='text-base font-medium text-slate-900 mb-6 pb-4 border-b border-slate-100 flex items-center gap-2'>

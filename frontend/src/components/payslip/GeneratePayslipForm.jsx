@@ -1,5 +1,7 @@
 import { Loader2, Plus, X } from 'lucide-react';
-import React, { useState } from 'react'
+import { useState } from 'react'
+import api from '../../api/axios';
+import toast from 'react-hot-toast';
 
 const GeneratePayslipForm = ({employees, onSuccess}) => {
     const [isOpen, setIsOpen] = useState(false);
@@ -15,8 +17,29 @@ const GeneratePayslipForm = ({employees, onSuccess}) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-    }
 
+        const payload = {
+            userId: e.target.employeeId.value,
+            month: e.target.month.value,
+            year: e.target.year.value,
+            basicSalary: e.target.basicSalary.value,
+            allowances: e.target.allowances.value,
+            deductions: e.target.deductions.value,
+        };
+
+        try {
+            setLoading(true);
+            await api.post("/payslip", payload);
+            toast.success("Payslip generated");
+            setIsOpen(false);
+            onSuccess?.();
+        } catch (err) {
+            toast.error(err.response?.data?.error || "Failed to generate payslip");
+        } finally {
+            setLoading(false);
+        }
+    }
+    
   return (
     <div className='fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4'>
         <div className='card max-w-lg w-full p-6 animate-slide-up'>
@@ -36,7 +59,7 @@ const GeneratePayslipForm = ({employees, onSuccess}) => {
                     </label>
                     <select name="employeeId" required>
                         {employees.map((e) => (
-                            <option value={e.id} key={e.id}>
+                            <option value={e._id} key={e._id}>
                                 {e.firstName} {e.lastName}
                             </option>
                         ))}

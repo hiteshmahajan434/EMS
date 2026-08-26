@@ -1,16 +1,25 @@
 import { Loader2Icon, LogInIcon, LogOutIcon, CheckCircle2 } from 'lucide-react'
 import { useState } from 'react';
 import { format } from 'date-fns';
+import api from "../../api/axios";
+import toast from "react-hot-toast";
 
 function CheckInButton({ todayRecord, onAction }) {
     const [loading, setLoading] = useState(false)
 
     const handleAttendance = async () => {
         setLoading(true);
-        setTimeout(() => {
+        try {
+            const { data } = await api.post("/attendance/clock");
+            toast.success(
+                data.type === "CHECK_IN" ? "Clocked in" : "Clocked out"
+            );
+            await onAction();
+        } catch (err) {
+            toast.error(err.response?.data?.error || "Clock in/out failed");
+        } finally {
             setLoading(false);
-            onAction();
-        }, 1000);
+        }
     }
 
     const isCheckedIn = !!todayRecord?.checkIn;

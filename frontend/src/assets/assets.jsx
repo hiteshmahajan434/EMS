@@ -2,10 +2,11 @@ export const DEPARTMENTS = ["Engineering", "Human Resources", "Marketing", "Sale
 
 export const dummyAdminDashboardData = {
     role: "ADMIN",
-    totalEmployees: 3,
-    totalDepartments: 10,
-    todayAttendance: 1,
-    pendingLeaves: 1,
+    totalEmployees: 10,
+    presentToday: 7,
+    onLeave: 2,
+    pendingManagerLeaves: 3,
+    totalPayroll: 1000
 };
 
 export const dummyEmployeeDashboardData = {
@@ -302,7 +303,8 @@ export const dummyAttendanceData = {
             checkOut: null,
             workingHours: 0,
             dayType: null,
-            status: "LATE"
+            status: "LATE",
+            role: "employee"
         },
         {
             _id: "2",
@@ -311,7 +313,8 @@ export const dummyAttendanceData = {
             checkOut: "2026-08-05T17:18:00.000Z",
             workingHours: 8.37,
             dayType: "Full Day",
-            status: "PRESENT"
+            status: "PRESENT",
+            role: "employee"
         },
         {
             _id: "3",
@@ -320,7 +323,8 @@ export const dummyAttendanceData = {
             checkOut: "2026-08-04T17:06:00.000Z",
             workingHours: 7.9,
             dayType: "Three Quarter Day",
-            status: "LATE"
+            status: "LATE",
+            role: "employee"
         },
         {
             _id: "4",
@@ -329,7 +333,8 @@ export const dummyAttendanceData = {
             checkOut: "2026-08-03T17:11:00.000Z",
             workingHours: 8.35,
             dayType: "Full Day",
-            status: "PRESENT"
+            status: "PRESENT",
+            role: "manager"
         },
         {
             _id: "5",
@@ -338,7 +343,8 @@ export const dummyAttendanceData = {
             checkOut: "2026-08-02T17:04:00.000Z",
             workingHours: 8.1,
             dayType: "Full Day",
-            status: "PRESENT"
+            status: "PRESENT",
+            role: "manager"
         }
     ],
 
@@ -396,6 +402,7 @@ export const dummyEmployeeAttendance = [
     checkIn: "2026-08-07T09:02:15.347Z",
     checkOut: "2026-08-07T18:14:40.122Z",
     status: "Present",
+    role: "manager"
   },
   {
     id: 2,
@@ -407,6 +414,7 @@ export const dummyEmployeeAttendance = [
     checkIn: "2026-08-07T09:18:32.541Z",
     checkOut: null,
     status: "Working",
+    role: "manager"
   },
   {
     id: 3,
@@ -418,6 +426,7 @@ export const dummyEmployeeAttendance = [
     checkIn: null,
     checkOut: null,
     status: "Absent",
+    role: "manager"
   },
   {
     id: 4,
@@ -429,6 +438,7 @@ export const dummyEmployeeAttendance = [
     checkIn: null,
     checkOut: null,
     status: "On Leave",
+    role: "employee"
   },
   {
     id: 5,
@@ -440,6 +450,7 @@ export const dummyEmployeeAttendance = [
     checkIn: "2026-08-07T08:56:11.128Z",
     checkOut: "2026-08-07T17:47:53.002Z",
     status: "Present",
+    role: "employee"
   },
   {
     id: 6,
@@ -451,6 +462,7 @@ export const dummyEmployeeAttendance = [
     checkIn: "2026-08-07T09:11:46.934Z",
     checkOut: "2026-08-07T18:05:18.451Z",
     status: "Present",
+    role: "employee"
   },
   {
     id: 7,
@@ -462,6 +474,7 @@ export const dummyEmployeeAttendance = [
     checkIn: "2026-08-07T09:25:03.618Z",
     checkOut: null,
     status: "Working",
+    role: "manager"
   },
   {
     id: 8,
@@ -473,6 +486,7 @@ export const dummyEmployeeAttendance = [
     checkIn: null,
     checkOut: null,
     status: "Absent",
+    role: "employee"
   },
 ];
 

@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useState } from "react"
-import { dummyAttendanceData } from "../assets/assets";
 import Loading from "../components/Loading";
 import CheckInButton from "../components/attendance/CheckInButton";
 import AttendanceStats from "../components/attendance/AttendanceStats";
 import { AttendanceHistory } from "../components/attendance/AttendanceHistory";
 import { CalendarClock } from "lucide-react";
 import PageHero from "../components/layout/PageHero";
+import api from "../api/axios";
+import toast from "react-hot-toast";
 
 const Attendance = () => {
   const [summary, setSummary] = useState(null);
@@ -17,15 +18,17 @@ const Attendance = () => {
   const fetchData = useCallback(async () => {
       setLoading(true);
 
-      // Later replace this with axios.get(...)
-      const response = dummyAttendanceData;
-
-      setSummary(response.summary);
-      setTodayRecord(response.todayRecord);
-      setHistory(response.attendanceHistory);
-      setIsDeleted(response.user.isDeleted);
-
-      setLoading(false);
+      try {
+          const { data } = await api.get("/attendance/my");
+          setSummary(data.summary);
+          setTodayRecord(data.todayRecord);
+          setHistory(data.attendance);
+          setIsDeleted(data.user.isDeleted);
+      } catch (err) {
+          toast.error(err.response?.data?.error || "Failed to load attendance");
+      } finally {
+          setLoading(false);
+      }
   }, []);
 
   useEffect(() => {

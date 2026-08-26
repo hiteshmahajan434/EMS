@@ -1,5 +1,7 @@
 import { Loader2Icon, LockIcon, X } from 'lucide-react';
-import React, { useState } from 'react'
+import { useState } from 'react'
+import api from '../api/axios';
+import toast from 'react-hot-toast';
 
 const ChangePassword = ({open, onClose}) => {
     const [loading, setLoading] = useState(false);
@@ -7,7 +9,45 @@ const ChangePassword = ({open, onClose}) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-    }
+
+        setMessage({ type: "", text: "" });
+
+        try {
+            setLoading(true);
+
+            const payload = {
+                currPassword: e.target.currentPassword.value,
+                newPassword: e.target.newPassword.value
+            };
+
+            const { data } = await api.post(
+                "/auth/change-password",
+                payload
+            );
+
+            toast.success(
+                data.message || "Password changed successfully"
+            );
+
+            e.target.reset();
+            onClose();
+
+        } catch (err) {
+            const errorMessage =
+                err.response?.data?.error ||
+                "Failed to change password";
+
+            setMessage({
+                type: "error",
+                text: errorMessage
+            });
+
+            toast.error(errorMessage);
+
+        } finally {
+            setLoading(false);
+        }
+    };
 
     if(!open) return null;
 

@@ -1,10 +1,11 @@
-import React, { useCallback, useEffect, useState } from 'react'
-import { dummyLeaveData } from '../assets/assets';
+import { useCallback, useEffect, useState } from 'react'
 import Loading from '../components/Loading';
 import { Calendar1Icon, PalmtreeIcon, PlusIcon, ThermometerIcon, UmbrellaIcon } from 'lucide-react'
 import LeaveHistory from '../components/leave/LeaveHistory';
 import ApplyLeave from '../components/leave/ApplyLeave';
 import PageHero from "../components/layout/PageHero";
+import api from '../api/axios';
+import toast from 'react-hot-toast';
 
 const Leave = () => {
   const [leaves, setLeaves] = useState([]);
@@ -13,11 +14,18 @@ const Leave = () => {
   const [isDeleted, setIsDeleted] = useState(false);
   const isAdmin = false;
 
-  const fetchLeaves = useCallback(() => {
-    setLeaves(dummyLeaveData);
-    setTimeout(() => {
+  const fetchLeaves = useCallback(async () => {
+    setLoading(true);
+    
+    try {
+      const { data } = await api.get("/leave/my");
+      setLeaves(data.data);
+      setIsDeleted(!!data.user?.isDeleted);
+    } catch (err) {
+      toast.error(err.response?.data?.error || "Failed to load leaves");
+    } finally {
       setLoading(false);
-    }, 1000);
+    }
   }, []);
 
   useEffect(() => {

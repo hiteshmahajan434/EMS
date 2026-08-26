@@ -1,13 +1,31 @@
-import { Check, Loader2, Loader2Icon, X } from 'lucide-react';
-import React, { useState } from 'react'
-import { format } from 'date-fns';
+import { Check, Loader2, X } from "lucide-react";
+import React, { useState } from "react";
+import { format } from "date-fns";
+import api from "../../api/axios";
 
 const LeaveHistory = ({leaves, isManagerAdmin, onUpdate}) => {
     const [processing, setProcessing] = useState(null);
 
-    const handleStatusUpdate = async(id, status) => {
-        setProcessing(id);
-    }
+    const handleStatusUpdate = async (id, status) => {
+        try {
+            setProcessing(id);
+
+            await api.patch(`/leave/${id}`, {
+                status
+            });
+
+            await onUpdate();
+        } catch (error) {
+            console.error("Failed to update leave status:", error);
+
+            alert(
+                error.response?.data?.error ||
+                "Failed to update leave status"
+            );
+        } finally {
+            setProcessing(null);
+        }
+    };
 
   return (
     <div className='card overflow-hidden'>
@@ -44,8 +62,8 @@ const LeaveHistory = ({leaves, isManagerAdmin, onUpdate}) => {
                                 <tr key={leave._id || leave.id}>
                                     {isManagerAdmin && (
                                         <td className='text-slate-900'>
-                                            {leave.employee?.firstName} 
-                                            {leave.employee?.lastName}
+                                            {leave.user?.firstName} 
+                                            {leave.user?.lastName}
                                         </td>
                                     )}
 

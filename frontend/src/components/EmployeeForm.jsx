@@ -1,7 +1,9 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { DEPARTMENTS } from "../assets/assets";
 import { Loader2Icon } from "lucide-react";
+import api from "../api/axios";
+import toast from "react-hot-toast";
 
 const EmployeeForm = ({
     initialData,
@@ -12,9 +14,16 @@ const EmployeeForm = ({
 }) => {
 
     const navigate = useNavigate();
+
     const [loading, setLoading] = useState(false);
+    const [error, setError] = useState("");
 
     const isEditMode = !!initialData;
+
+    const displayRole =
+        userType === "manager"
+            ? "Manager"
+            : "Employee";
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -23,19 +32,128 @@ const EmployeeForm = ({
             return;
         }
 
-        // API logic will be added here
-    };
+        setError("");
 
-    const displayRole =
-        userType === "manager"
-            ? "Manager"
-            : "Employee";
+        const form = e.target;
+
+        try {
+            setLoading(true);
+
+            /*
+             * Backend field names
+             *
+             * Frontend          Backend
+             * --------------------------------
+             * joinDate          joiningDate
+             * position          designation
+             * employmentStatus  status
+             */
+
+            const payload = {
+                firstName: form.firstName.value,
+                lastName: form.lastName.value,
+                email: form.email.value,
+                phone: form.phone.value,
+
+                department: form.department.value,
+                designation: form.position.value,
+
+                joiningDate: form.joinDate.value,
+
+                basicSalary: Number(form.basicSalary.value),
+
+                bio: form.bio.value
+            };
+
+            /*
+             * Password
+             *
+             * During creation it is required.
+             * During edit it is optional.
+             */
+            if (form.password?.value) {
+                payload.password = form.password.value;
+            }
+
+            /*
+             * Status is only available while editing.
+             */
+            if (isEditMode && form.employmentStatus) {
+                payload.status = form.employmentStatus.value;
+            }
+
+            /*
+             * CREATE
+             *
+             * POST /api/users
+             */
+            if (!isEditMode) {
+
+                const { data } = await api.post(
+                    "/users",
+                    payload
+                );
+
+                toast.success(
+                    data.message ||
+                    `${displayRole} created successfully`
+                );
+
+            }
+
+            /*
+             * UPDATE
+             *
+             * PUT /api/users/:id
+             */
+            else {
+
+                const { data } = await api.put(
+                    `/users/${initialData._id}`,
+                    payload
+                );
+
+                toast.success(
+                    data.message ||
+                    `${displayRole} updated successfully`
+                );
+            }
+
+            /*
+             * Refresh parent page
+             */
+            onSuccess?.();
+
+        } catch (err) {
+
+            const errorMessage =
+                err.response?.data?.error ||
+                `Failed to ${isEditMode ? "update" : "create"} ${displayRole.toLowerCase()}`;
+
+            setError(errorMessage);
+
+            toast.error(errorMessage);
+
+        } finally {
+            setLoading(false);
+        }
+    };
 
     return (
         <form
             className="space-y-6 max-w-3xl animate-fade-in"
             onSubmit={handleSubmit}
         >
+
+            {/* =====================================================
+                ERROR
+            ===================================================== */}
+
+            {error && (
+                <div className="bg-rose-50 text-rose-700 p-4 rounded-xl text-sm border border-rose-200">
+                    {error}
+                </div>
+            )}
 
             {/* =====================================================
                 PERSONAL INFORMATION
@@ -50,6 +168,7 @@ const EmployeeForm = ({
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 text-sm text-slate-700">
 
                     {/* First Name */}
+
                     <div>
                         <label className="block mb-2">
                             First Name
@@ -58,12 +177,13 @@ const EmployeeForm = ({
                         <input
                             name="firstName"
                             required
-                            defaultValue={initialData?.firstName}
+                            defaultValue={initialData?.firstName || ""}
                             disabled={readOnly}
                         />
                     </div>
 
                     {/* Last Name */}
+
                     <div>
                         <label className="block mb-2">
                             Last Name
@@ -72,12 +192,13 @@ const EmployeeForm = ({
                         <input
                             name="lastName"
                             required
-                            defaultValue={initialData?.lastName}
+                            defaultValue={initialData?.lastName || ""}
                             disabled={readOnly}
                         />
                     </div>
 
                     {/* Phone */}
+
                     <div>
                         <label className="block mb-2">
                             Phone Number
@@ -86,12 +207,13 @@ const EmployeeForm = ({
                         <input
                             name="phone"
                             required
-                            defaultValue={initialData?.phone}
+                            defaultValue={initialData?.phone || ""}
                             disabled={readOnly}
                         />
                     </div>
 
                     {/* Join Date */}
+
                     <div>
                         <label className="block mb-2">
                             Join Date
@@ -102,8 +224,8 @@ const EmployeeForm = ({
                             name="joinDate"
                             required
                             defaultValue={
-                                initialData?.joinDate
-                                    ? new Date(initialData.joinDate)
+                                initialData?.joiningDate
+                                    ? new Date(initialData.joiningDate)
                                         .toISOString()
                                         .split("T")[0]
                                     : ""
@@ -113,6 +235,7 @@ const EmployeeForm = ({
                     </div>
 
                     {/* Bio */}
+
                     <div className="sm:col-span-2">
 
                         <label className="block mb-2">
@@ -121,7 +244,7 @@ const EmployeeForm = ({
 
                         <textarea
                             name="bio"
-                            defaultValue={initialData?.bio}
+                            defaultValue={initialData?.bio || ""}
                             rows={3}
                             className="resize-none"
                             placeholder="Brief description..."
@@ -133,6 +256,7 @@ const EmployeeForm = ({
                 </div>
 
             </div>
+
 
             {/* =====================================================
                 EMPLOYMENT DETAILS
@@ -147,6 +271,7 @@ const EmployeeForm = ({
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 text-sm text-slate-700">
 
                     {/* Department */}
+
                     <div>
 
                         <label className="block mb-2">
@@ -155,11 +280,13 @@ const EmployeeForm = ({
 
                         <select
                             name="department"
+                            required
                             defaultValue={
                                 initialData?.department || ""
                             }
                             disabled={readOnly}
                         >
+
                             <option value="">
                                 Select Department
                             </option>
@@ -177,7 +304,9 @@ const EmployeeForm = ({
 
                     </div>
 
+
                     {/* Position */}
+
                     <div>
 
                         <label className="block mb-2">
@@ -187,13 +316,19 @@ const EmployeeForm = ({
                         <input
                             name="position"
                             required
-                            defaultValue={initialData?.position}
+                            defaultValue={
+                                initialData?.designation ||
+                                initialData?.position ||
+                                ""
+                            }
                             disabled={readOnly}
                         />
 
                     </div>
 
+
                     {/* Basic Salary */}
+
                     <div>
 
                         <label className="block mb-2">
@@ -207,57 +342,18 @@ const EmployeeForm = ({
                             min="0"
                             step="0.01"
                             defaultValue={
-                                initialData?.basicSalary || 0
+                                initialData?.basicSalary ?? 0
                             }
                             disabled={readOnly}
                         />
 
                     </div>
 
-                    {/* Allowances */}
-                    <div>
-
-                        <label className="block mb-2">
-                            Allowances
-                        </label>
-
-                        <input
-                            type="number"
-                            name="allowances"
-                            required
-                            min="0"
-                            step="0.01"
-                            defaultValue={
-                                initialData?.allowances || 0
-                            }
-                            disabled={readOnly}
-                        />
-
-                    </div>
-
-                    {/* Deductions */}
-                    <div>
-
-                        <label className="block mb-2">
-                            Deductions
-                        </label>
-
-                        <input
-                            type="number"
-                            name="deductions"
-                            required
-                            min="0"
-                            step="0.01"
-                            defaultValue={
-                                initialData?.deductions || 0
-                            }
-                            disabled={readOnly}
-                        />
-
-                    </div>
 
                     {/* Status */}
+
                     {isEditMode && (
+
                         <div>
 
                             <label className="block mb-2">
@@ -268,11 +364,13 @@ const EmployeeForm = ({
                                 name="employmentStatus"
                                 required
                                 defaultValue={
+                                    initialData?.status ||
                                     initialData?.employmentStatus ||
                                     "ACTIVE"
                                 }
                                 disabled={readOnly}
                             >
+
                                 <option value="ACTIVE">
                                     Active
                                 </option>
@@ -280,14 +378,17 @@ const EmployeeForm = ({
                                 <option value="INACTIVE">
                                     Inactive
                                 </option>
+
                             </select>
 
                         </div>
+
                     )}
 
                 </div>
 
             </div>
+
 
             {/* =====================================================
                 ACCOUNT SETUP
@@ -302,6 +403,7 @@ const EmployeeForm = ({
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 text-sm text-slate-700">
 
                     {/* Email */}
+
                     <div className="sm:col-span-2">
 
                         <label className="block mb-2">
@@ -312,14 +414,17 @@ const EmployeeForm = ({
                             type="email"
                             name="email"
                             required
-                            defaultValue={initialData?.email}
+                            defaultValue={initialData?.email || ""}
                             disabled={readOnly}
                         />
 
                     </div>
 
+
                     {/* Password */}
+
                     {!isEditMode && !readOnly && (
+
                         <div>
 
                             <label className="block mb-2">
@@ -333,9 +438,12 @@ const EmployeeForm = ({
                             />
 
                         </div>
+
                     )}
 
+
                     {isEditMode && !readOnly && (
+
                         <div>
 
                             <label className="block mb-2">
@@ -349,9 +457,12 @@ const EmployeeForm = ({
                             />
 
                         </div>
+
                     )}
 
+
                     {/* System Role */}
+
                     <div>
 
                         <label className="block mb-2">
@@ -369,6 +480,7 @@ const EmployeeForm = ({
                 </div>
 
             </div>
+
 
             {/* =====================================================
                 BUTTONS
@@ -388,7 +500,9 @@ const EmployeeForm = ({
                     {readOnly ? "Close" : "Cancel"}
                 </button>
 
+
                 {!readOnly && (
+
                     <button
                         type="submit"
                         disabled={loading}
@@ -405,6 +519,7 @@ const EmployeeForm = ({
                         }
 
                     </button>
+
                 )}
 
             </div>

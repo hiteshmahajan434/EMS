@@ -1,32 +1,50 @@
 import { useEffect, useState } from "react";
-import { dummyAdminDashboardData, dummyEmployeeDashboardData, dummyManagerDashboardData } from "../assets/assets";
+
 import Loading from "../components/Loading";
 import EmployeeDashboard from "../components/EmployeeDashboard";
 import AdminDashboard from "../components/AdminDashboard";
 import ManagerDashboard from "../components/ManagerDashboard";
 
+import { useAuth } from "../context/AuthContext";
+import api from "../api/axios";
+import {toast} from "react-hot-toast"
+
 const Dashboard = () => {
-    const [employeeData, setEmployeeData] = useState(null);
-    const [managerData, setManagerData] = useState(null);
+    const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        // For testing manager dashboard
-        // setEmployeeData({
-        //     ...dummyEmployeeDashboardData,
-        //     role: "MANAGER",
-        // });
-        // setManagerData(dummyManagerDashboardData);
-        setEmployeeData(dummyAdminDashboardData);
+    const {user, loading : authLoading} = useAuth();
+    const role = user?.role; // "admin" | "manager" | "employee"
 
-        setTimeout(() => {
+    useEffect(() => {
+        if (authLoading) return;
+
+        if (!user) {
             setLoading(false);
-        }, 1000);
+            return;
+        }
+        
+        const fetchDashboard = async () => {
+            try {
+                const res = await api.get("/dashboard");
+                setData(res.data);
+            } catch (err) {
+                console.error("Dashboard Error:", err);
+                toast.error(
+                    err.response?.data?.error ||
+                    err.message ||
+                    "Failed to load dashboard data"
+                );
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchDashboard();
     }, []);
 
     if (loading) return <Loading />; 
 
-    if (!employeeData) {
+    if (!data) {
         return (
             <p className="text-center text-slate-500 py-12">
                 Failed to load dashboard
@@ -37,23 +55,32 @@ const Dashboard = () => {
     // Manager:
     // - EmployeeDashboard → manager's own data
     // - ManagerDashboard → team's data
-    if (employeeData.role === "MANAGER") {
+    if (role === "manager") {
         return (
             <div className="space-y-6">
-                <EmployeeDashboard data={employeeData} />
+                <EmployeeDashboard data={data.employeeData} />
 
-                <ManagerDashboard data={managerData} />
+                <ManagerDashboard data={data.managerData} />
             </div>
         );
     }
 
     // Admin
-    if (employeeData.role === "ADMIN") {
-        return <AdminDashboard data={employeeData} />;
+    if (role === "admin") {
+        return <AdminDashboard data={data} />;
     }
 
     // Employee
-    return <EmployeeDashboard data={employeeData} />;
+    if(role === "employee"){
+        return <EmployeeDashboard data={data} />;
+    }
+
+    return (
+        <p className="text-center text-slate-500 py-12">
+            Invalid user role
+        </p>
+    );
+
 };
 
 export default Dashboard;

@@ -4,9 +4,13 @@ import { Plus, Search, Users, X } from "lucide-react";
 import EmployeeCard from "../../components/EmployeeCard";
 import EmployeeForm from "../../components/EmployeeForm";
 import PageHero from "../../components/layout/PageHero";
+import api from "../../api/axios";
+import toast from "react-hot-toast";
+import { useAuth } from '../../context/AuthContext';
 
 const Employees = () => {
     const [employees, setEmployees] = useState([]);
+    const [managers, setManagers] = useState([]);
     const [loading, setLoading] = useState(true);
 
     const [search, setSearch] = useState("");
@@ -20,45 +24,45 @@ const Employees = () => {
 
     // Temporary role
     // Later this will come from Auth Context
-    const role = "ADMIN";
+    const { user } = useAuth();
 
-    const fetchEmployees = useCallback(async () => {
-        setLoading(true);
+    const role = user?.role;
 
-        setEmployees(
-            dummyEmployeeData.filter((emp) =>
-                selectedDept
-                    ? emp.department === selectedDept
-                    : true
-            )
-        );
+    const fetchEmployees = async () => {
+        try {
+            setLoading(true);
 
-        setLoading(false);
-    }, [selectedDept]);
+            const params = {};
+
+            if (selectedDept) {
+                params.department = selectedDept;
+            }
+
+            if (role === "admin" && selectedManager) {
+                params.manager = selectedManager;
+            }
+
+            const { data } = await api.get("/users", { params });
+
+            setEmployees(data.employees || []);
+
+            if (role === "admin") {
+                setManagers(data.managers || []);
+            }
+
+        } catch (err) {
+            toast.error(
+                err.response?.data?.error ||
+                "Failed to load employees"
+            );
+        } finally {
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
         fetchEmployees();
-    }, [fetchEmployees]);
-
-    // Managers for Admin filter
-    const managers = dummyEmployeeData.filter(
-        (emp) => emp.role === "manager"
-    );
-
-    // Search + Manager filter
-    const filtered = employees.filter((emp) => {
-        const matchesSearch =
-            `${emp.firstName} ${emp.lastName} ${emp.position}`
-                .toLowerCase()
-                .includes(search.toLowerCase());
-
-        const matchesManager =
-            role === "ADMIN" && selectedManager
-                ? emp.managerId === selectedManager
-                : true;
-
-        return matchesSearch && matchesManager;
-    });
+    }, [selectedDept, selectedManager, role]);
 
     return (
         <div className="animate-fade-in">
@@ -68,7 +72,7 @@ const Employees = () => {
                 icon={Users}
                 title="Employees"
                 subtitle="Manage your employees, assign roles, and update information."
-                badge={`${filtered.length} Employees`}
+                badge={`${employees.length} Employees`}
             >
                 <button
                     className="btn-primary flex items-center gap-2 w-full sm:w-auto justify-center"
@@ -115,8 +119,8 @@ const Employees = () => {
 
                             {managers.map((manager) => (
                                 <option
-                                    value={manager.id}
-                                    key={manager.id}
+                                    value={manager._id}
+                                    key={manager._id}
                                 >
                                     {manager.firstName}{" "}
                                     {manager.lastName}
@@ -158,14 +162,14 @@ const Employees = () => {
             ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5">
 
-                    {filtered.length === 0 ? (
+                    {employees.length === 0 ? (
                         <p className="col-span-full text-center py-16 text-slate-400 bg-white rounded-2xl border border-dashed border-slate-200">
                             No employees found
                         </p>
                     ) : (
-                        filtered.map((emp) => (
+                        employees.map((emp) => (
                             <EmployeeCard
-                                key={emp.id}
+                                key={emp._id}
                                 employee={emp}
                                 onDelete={fetchEmployees}
                                 onEdit={(employee) =>

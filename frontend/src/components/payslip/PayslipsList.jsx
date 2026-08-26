@@ -1,6 +1,5 @@
 import { format } from 'date-fns'
 import { Download } from 'lucide-react'
-import React from 'react'
 
 const PayslipsList = ({payslips, isAdmin}) => {
   return (
@@ -32,7 +31,7 @@ const PayslipsList = ({payslips, isAdmin}) => {
                                 <tr key={payslip._id || payslip.id}>
                                     {isAdmin && (
                                         <td className='text-slate-900'>
-                                            {payslip.employee?.firstName} {payslip.employee?.lastName}
+                                            {payslip.userId?.firstName} {payslip.userId?.lastName}
                                         </td>
                                     )}
 
