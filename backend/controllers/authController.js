@@ -115,12 +115,29 @@ export const login = async (req, res) => {
     }
 }
 
-//Get session for employee and admin
-//GET /api/auth/session
-// export const session = (req, res) => {
-//     const session = req.session;
-//     return res.json({user: session});
-// }
+// GET /api/auth/session
+export const session = async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id)
+            .select("-password");
+
+        if (!user) {
+            return res.status(404).json({
+                error: "User not found"
+            });
+        }
+
+        return res.json({
+            user
+        });
+    } catch (error) {
+        console.error("Session error:", error);
+
+        return res.status(500).json({
+            error: "Failed to fetch session"
+        });
+    }
+};
 
 //Change password for employee and admin
 //POST /api/auth/change-password
@@ -149,7 +166,10 @@ export const changePassword = async (req, res) => {
         const hashed = await bcrypt.hash(newPassword, 10);
         await User.findByIdAndUpdate(userId, {password: hashed});
 
-        return res.json({success: true});
+        return res.json({
+            success: true,
+            message: "Password changed successfully"
+        });
     } catch (error) {
         console.log(error);
         return res.status(500).json({ error: "Failed to change password" });

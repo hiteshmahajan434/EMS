@@ -18,17 +18,17 @@ export const createPayslip = async (req, res) => {
             return res.status(404).json({ error: "User not found" });
         }
 
-        // Admin -> Manager
-        if (req.user.role === "admin" && user.role !== "manager") {
+        // Only Admin can generate payslips
+        if (req.user.role !== "admin") {
             return res.status(403).json({
-                error: "Admin can generate payslips only for managers"
+                error: "Only admin can generate payslips"
             });
         }
 
-        // Manager -> Employee
-        if (req.user.role === "manager" && (user.role !== "employee" || user.manager?.toString() !== req.user.id)) {
+        // Admin can generate only for users in the same organization
+        if (user.organization.toString() !== req.user.organization.toString()) {
             return res.status(403).json({
-                error: "Manager can generate payslips only for their employees"
+                error: "User does not belong to your organization"
             });
         }
 
@@ -63,75 +63,71 @@ export const createPayslip = async (req, res) => {
     }
 }
 
-//Get Payslips for admin and manager
 //GET /api/payslip
 export const getPayslips = async (req, res) => {
     try {
-        let filter = {};
+        // ADMIN
+        if (req.user.role === "admin") {
 
-        if(req.user.role == "admin"){
-            const managers = await User.find({
+            const users = await User.find({
                 organization: req.user.organization,
-                role: "manager"
-            }).select("_id");
+                role: { $in: ["manager", "employee"] },
+                isDeleted: false
+            })
+            .select("_id firstName lastName role");
 
-            filter.userId = {$in : managers};
+            const userIds = users.map(user => user._id);
+
+            const payslips = await Payslip.find({
+                organizationId: req.user.organization,
+                userId: { $in: userIds }
+            })
+            .select("userId month year basicSalary netSalary")
+            .populate("userId", "firstName lastName role")
+            .sort({
+                year: -1,
+                month: -1
+            })
+
+            return res.status(200).json({
+                users,
+                payslips
+            });
         }
 
-        if(req.user.role == "manager"){
-            const employees = await User.find({
-                manager: req.user.id,
-                role: "employee"
-            }).select("_id");
+        // MANAGER / EMPLOYEE
+        if (req.user.role === "manager" || req.user.role === "employee") {
 
-            filter.userId = {$in : employees};
+            const payslips = await Payslip.find({
+                organizationId: req.user.organization,
+                userId: req.user.id
+            })
+            .sort({
+                year: -1,
+                month: -1
+            })
+            .select("month year basicSalary netSalary")
+
+            return res.status(200).json({
+                payslips
+            });
         }
+    } catch (error) {
+        console.error("Get Payslips Error:", error);
 
-        const payslips = await Payslip.find(filter)
-            .populate("userId")
-            .sort({createdAt: -1});
-
-        const data = payslips.map((p) => {
-            const obj = p.toObject();
-
-            return {
-            ...obj,
-            id: obj._id.toString(),
-            user: obj.userId,
-            userId: obj.userId?._id?.toString(),
-            };
+        return res.status(500).json({
+            error: "Failed to fetch payslips"
         });
-
-        return res.json(data);
-    } catch (error) {
-        return res.status(500).json({error: "Failed to fetch payslips"});
     }
-}
-
-//Get self payslips for employee and manager
-//GET /api/payslip/my
-export const getMyPayslips = async (req, res) => {
-    try {
-        const user = await User.findById(req.user.id);
-
-        if(!user){
-            return res.status(404).json({error: "User not found"});
-        }
-
-        const payslips = await Payslip.find({userId: req.user.id}).sort({createdAt : -1});
-
-        return res.json({data: payslips});
-    } catch (error) {
-        return res.status(500).json({error: "Failed to fetch payslips"});
-    }
-}
+};
 
 //Get payslip by  payslip ID
 //GET /api/payslip/:id
 export const getPayslipByID = async (req, res) => {
     try {
         const payslip = await Payslip.findById(req.params.id)
-            .populate("userId")
+            .select("userId month year basicSalary allowances deductions netSalary")
+            .populate("userId", "firstName lastName position email organization")
             .lean();
 
         if(!payslip){
@@ -144,35 +140,41 @@ export const getPayslipByID = async (req, res) => {
             });
         }
 
-        // Manager -> Own Employees
-        if (req.user.role === "manager") {
-            const employee = await User.findById(payslip.userId._id);
-
-            if (employee.role !== "employee" || employee.manager?.toString() !== req.user.id) {
-                return res.status(403).json({
-                error: "Forbidden",
-                });
-            }
+        // Manager -> Own Payslip only
+        if (req.user.role === "manager" &&
+            payslip.userId._id.toString() !== req.user.id) {
+            return res.status(403).json({
+                error: "Forbidden"
+            });
         }
 
-        // Admin -> Managers in Same Organization
+        // Admin -> Users in Same Organization
         if (req.user.role === "admin") {
-            const manager = await User.findById(payslip.userId._id);
-
-            if (manager.role !== "manager" || manager.organization.toString() !== req.user.organization) {
+            if (
+                !payslip.userId ||
+                payslip.userId.organization?.toString() !== req.user.organization.toString()
+            ) {
                 return res.status(403).json({
-                error: "Forbidden",
+                    error: "Forbidden"
                 });
             }
         }
 
-        const data = {
-            ...payslip,
-            id: payslip._id.toString(),
-            user: payslip.userId
-        };
-
-        return res.json(data);
+        return res.json({
+            id: payslip._id,
+            month: payslip.month,
+            year: payslip.year,
+            basicSalary: payslip.basicSalary,
+            allowances: payslip.allowances,
+            deductions: payslip.deductions,
+            netSalary: payslip.netSalary,
+            employee: {
+                firstName: payslip.userId.firstName,
+                lastName: payslip.userId.lastName,
+                position: payslip.userId.position,
+                email: payslip.userId.email
+            }
+        });
     } catch (error) {
         return res.status(500).json({error: "Failed to fetch payslip"});
     }

@@ -189,13 +189,23 @@ export const getTeamAttendance = async (req, res) => {
 
         if (date) {
             const selectedDate = new Date(date);
-            selectedDate.setHours(0,0,0,0);
-            attendanceFilter.date = selectedDate;
+
+            const startOfDay = new Date(selectedDate);
+            startOfDay.setHours(0, 0, 0, 0);
+
+            const endOfDay = new Date(selectedDate);
+            endOfDay.setHours(23, 59, 59, 999);
+
+            attendanceFilter.date = {
+                $gte: startOfDay,
+                $lte: endOfDay
+            };
         }
+        
         if(status) attendanceFilter.status = status
 
         const attendance = await Attendance.find(attendanceFilter)
-        .populate("userId", "firstName lastName employeeId")
+        .populate("userId", "firstName lastName role department")
         .sort({date: -1});
 
         return res.status(200).json(attendance);

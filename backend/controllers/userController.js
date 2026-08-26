@@ -11,28 +11,94 @@ import bcrypt from "bcrypt";
 // Return the response
 export const getUsers = async (req, res) => {
     try {
-        const {department} = req.query;
-        const filter = {};
-        if(department){ // If department exists then search by department else all employees
-            filter.department = department;
-        }
-        if(req.user.role == "admin"){
-            filter.organization = req.user.organization;
-            filter.role = { $in: ["manager", "employee"] }; //Only Manager and employee of same organization
-        }
-        if(req.user.role == "manager"){
-            filter.manager = req.user.id;
+        const { department, manager, role } = req.query;
+
+        // =========================
+        // ADMIN
+        // =========================
+        if (req.user.role === "admin") {
+
+            // Managers page
+            if (role === "manager") {
+
+                const managers = await User.find({
+                    organization: req.user.organization,
+                    role: "manager",
+                    ...(department && { department })
+                })
+                .sort({ createdAt: -1 })
+                .lean();
+
+                return res.status(200).json({
+                    managers
+                });
+            }
+
+            // Employees page
+            const managers = await User.find({
+                organization: req.user.organization,
+                role: "manager",
+            })
+            .select("_id firstName lastName")
+            .sort({ firstName: 1 })
+            .lean();
+
+            const employeeFilter = {
+                organization: req.user.organization,
+                role: "employee",
+            };
+
+            if (department) {
+                employeeFilter.department = department;
+            }
+
+            if (manager) {
+                employeeFilter.manager = manager;
+            }
+
+            const employees = await User.find(employeeFilter)
+                .sort({ createdAt: -1 })
+                .lean();
+
+            return res.status(200).json({
+                managers,
+                employees
+            });
         }
 
-        const users = await User.find(filter)
-            .sort({createdAt: -1})
-            .lean();
-        
-        return res.json(users);
+
+        // =========================
+        // MANAGER
+        // =========================
+        if (req.user.role === "manager") {
+
+            const employeeFilter = {
+                organization: req.user.organization,
+                role: "employee",
+                manager: req.user.id,
+            };
+
+            if (department) {
+                employeeFilter.department = department;
+            }
+
+            const employees = await User.find(employeeFilter)
+                .sort({ createdAt: -1 })
+                .lean();
+
+            return res.status(200).json({
+                employees
+            });
+        }
+
     } catch (error) {
-        return res.status(500).json({error: "Failed to fetch employees"});
+        console.error("Get users error:", error);
+
+        return res.status(500).json({
+            error: "Failed to fetch users"
+        });
     }
-}
+};
 
 //Create Users
 //POST /api/users
@@ -204,7 +270,10 @@ export const deleteUser = async (req, res) => {
 
         await user.save();
         
-        return res.json({success: true});
+        return res.json({
+            success: true,
+            message: "User deleted successfully"
+        });
     } catch (error) {
         return res.status(500).json({error: "Failed to delete user"});
     }
