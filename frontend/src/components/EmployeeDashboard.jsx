@@ -3,8 +3,11 @@ import { Link } from "react-router-dom";
 import PageHero from "./layout/PageHero";
 import TodayAttendance from "./layout/TodayAttendance";
 import QuickActions from "./layout/QuickActions";
+import { useAuth } from "../context/AuthContext";
 
 const EmployeeDashboard = ({ data }) => {
+    const {user} = useAuth();
+
     const cards = [
         {
             icon: CalendarIcon,
@@ -36,7 +39,7 @@ const EmployeeDashboard = ({ data }) => {
         <div className="animate-fade-in">
             <PageHero
                 icon={User}
-                title={`Welcome back, ${emp.firstName || "Employee"}!`}
+                title={`Welcome back, ${user.firstName || "Employee"}!`}
                 badge={emp.department || "Team member"}
                 subtitle={"Here's your work summary for today."}
             />

@@ -96,6 +96,8 @@ export const getMyLeave = async (req, res) => {
 // GET /api/leave
 export const getLeave = async (req, res) => {
     try {
+        const { date, status } = req.query;
+
         let filter = {};
 
         if(req.user.role === "manager"){
@@ -116,6 +118,25 @@ export const getLeave = async (req, res) => {
             filter.userId = {$in: managers.map(manager => manager._id)};
         }
 
+        if(status) filter.status = status;
+        if (date) {
+            const selectedDate = new Date(date);
+
+            const startOfDay = new Date(selectedDate);
+            startOfDay.setHours(0, 0, 0, 0);
+
+            const endOfDay = new Date(selectedDate);
+            endOfDay.setHours(23, 59, 59, 999);
+
+            filter.startDate = {
+                $lte: endOfDay
+            };
+
+            filter.endDate = {
+                $gte: startOfDay
+            };
+        }
+
         const leaves = await Leave.find(filter)
             .populate("userId")
             .sort({createdAt: -1});
@@ -132,6 +153,7 @@ export const getLeave = async (req, res) => {
 
         return res.json({data});
     } catch (error) {
+        console.error("Get leaves error:", error);
         return res.status(500).json({error: "Failed to fetch leaves"});
     }
 }

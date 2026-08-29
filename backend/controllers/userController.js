@@ -115,6 +115,7 @@ export const createUser = async (req, res) => {
             lastName,
             email,
             phone,
+            role,
             password,
             basicSalary,
             department,
@@ -124,14 +125,10 @@ export const createUser = async (req, res) => {
             bio
         } = req.body;
 
-        let manager = null, role = null;
+        let manager = null;
 
         if(req.user.role == "manager"){
             manager = req.user.id;
-            role = "employee";
-        }
-        if(req.user.role == "admin"){
-            role = "manager";
         }
 
         const organization = req.user.organization;

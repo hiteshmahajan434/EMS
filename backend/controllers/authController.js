@@ -92,6 +92,12 @@ export const login = async (req, res) => {
             return res.status(401).json({error: "Invalid credentials"});
         }
 
+        if (user.isDeleted) {
+            return res.status(403).json({
+                error: "Your account has been deleted. You cannot log in."
+            });
+        }
+
         const isValid = await bcrypt.compare(password, user.password);
         if(!isValid){
             return res.status(401).json({error: "Invalid credentials"});

@@ -21,7 +21,16 @@ import AdminPayslips from "./pages/admin-pages/AdminPayslips";
 const App = () => {
   return (
     <>
-      <Toaster />
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          duration: 3000,
+          style: {
+            padding: "14px 18px",
+            fontSize: "16px",
+          },
+        }}
+      />
       <Routes>
         <Route path="/login" element={<LoginLanding />} />
         <Route

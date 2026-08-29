@@ -178,6 +178,7 @@ const Managers = () => {
                                 onCancel={() => {
                                     setShowCreateModal(false);
                                 }}
+                                userType = "manager"
                             />
                         </div>
 

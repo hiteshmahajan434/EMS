@@ -54,6 +54,7 @@ const EmployeeForm = ({
                 lastName: form.lastName.value,
                 email: form.email.value,
                 phone: form.phone.value,
+                role: userType,
 
                 department: form.department.value,
                 designation: form.position.value,

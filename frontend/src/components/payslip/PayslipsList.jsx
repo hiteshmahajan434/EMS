@@ -1,7 +1,7 @@
 import { format } from 'date-fns'
 import { Download } from 'lucide-react'
 
-const PayslipsList = ({payslips, isAdmin}) => {
+const PayslipsList = ({payslips, isAdmin, loading}) => {
   return (
     <div className='card overflow-hidden'>
         <div className='overflow-x-auto'>
@@ -16,7 +16,18 @@ const PayslipsList = ({payslips, isAdmin}) => {
                     </tr>
                 </thead>
                 <tbody>
-                    {payslips.length === 0 ?(
+                    {loading ? (
+                        <tr>
+                        <td
+                            colSpan={isAdmin ? 5 : 4}
+                            className="text-center py-12"
+                        >
+                            <div className="flex justify-center">
+                            <div className="animate-spin h-8 w-8 border-2 border-indigo-600 border-t-transparent rounded-full" />
+                            </div>
+                        </td>
+                        </tr>
+                    ) : payslips.length === 0 ?(
                         <tr>
                             <td 
                                 className='text-center py-12 text-slate-400'

@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { format } from "date-fns";
 import api from "../../api/axios";
 
-const LeaveHistory = ({leaves, isManagerAdmin, onUpdate}) => {
+const LeaveHistory = ({leaves, isManagerAdmin, onUpdate, loading}) => {
     const [processing, setProcessing] = useState(null);
 
     const handleStatusUpdate = async (id, status) => {
@@ -47,7 +47,18 @@ const LeaveHistory = ({leaves, isManagerAdmin, onUpdate}) => {
                     </tr>
                 </thead>
                 <tbody>
-                    {leaves.length === 0 ?(
+                    {loading ? (
+                        <tr>
+                        <td
+                            colSpan={isManagerAdmin ? 6 : 4}
+                            className="text-center py-12"
+                        >
+                            <div className="flex justify-center">
+                            <div className="animate-spin h-8 w-8 border-2 border-indigo-600 border-t-transparent rounded-full" />
+                            </div>
+                        </td>
+                        </tr>
+                    ) : leaves.length === 0 ?(
                         <tr>
                             <td 
                                 className='text-center py-12 text-slate-400'
@@ -62,7 +73,7 @@ const LeaveHistory = ({leaves, isManagerAdmin, onUpdate}) => {
                                 <tr key={leave._id || leave.id}>
                                     {isManagerAdmin && (
                                         <td className='text-slate-900'>
-                                            {leave.user?.firstName} 
+                                            {leave.user?.firstName} {" "}
                                             {leave.user?.lastName}
                                         </td>
                                     )}

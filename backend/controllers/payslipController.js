@@ -69,31 +69,55 @@ export const getPayslips = async (req, res) => {
         // ADMIN
         if (req.user.role === "admin") {
 
+            const { month, year, role } = req.query;
+
             const users = await User.find({
                 organization: req.user.organization,
                 role: { $in: ["manager", "employee"] },
                 isDeleted: false
             })
-            .select("_id firstName lastName role");
+                .select("_id firstName lastName role")
+                .sort({
+                    firstName: 1,
+                    lastName: 1
+                });
 
-            const userIds = users.map(user => user._id);
+            let filteredUserIds = users.map(user => user._id);
 
-            const payslips = await Payslip.find({
+            if (role) {
+                filteredUserIds = users
+                    .filter(user => user.role === role)
+                    .map(user => user._id);
+            }
+
+            const payslipFilter = {
                 organizationId: req.user.organization,
-                userId: { $in: userIds }
-            })
-            .select("userId month year basicSalary netSalary")
-            .populate("userId", "firstName lastName role")
-            .sort({
-                year: -1,
-                month: -1
-            })
+                userId: { $in: filteredUserIds }
+            };
+
+            if (month) payslipFilter.month = Number(month);
+
+            if (year) payslipFilter.year = Number(year);
+
+            const payslips = await Payslip.find(payslipFilter)
+                .select(
+                    "userId month year basicSalary netSalary"
+                )
+                .populate(
+                    "userId",
+                    "firstName lastName role"
+                )
+                .sort({
+                    year: -1,
+                    month: -1
+                });
 
             return res.status(200).json({
                 users,
                 payslips
             });
         }
+
 
         // MANAGER / EMPLOYEE
         if (req.user.role === "manager" || req.user.role === "employee") {

@@ -24,6 +24,7 @@ const LoginForm = ({role, title, subtitle}) => {
         setLoading(true);
         try {
             await login(email, password);
+            toast.success("Login successful")
             navigate("/dashboard");
         } catch (error) {
             toast.error(error.response?.data?.error || error.message || "Login failed");

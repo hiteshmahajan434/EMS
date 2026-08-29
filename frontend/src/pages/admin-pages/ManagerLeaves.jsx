@@ -1,5 +1,14 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { Calendar1Icon, CheckCircle2Icon, Clock3Icon, FileTextIcon, XCircleIcon } from "lucide-react";
+import {
+  Calendar1Icon,
+  CheckCircle2Icon,
+  Clock3Icon,
+  FileTextIcon,
+  XCircleIcon,
+  SearchIcon,
+  FilterIcon,
+  XIcon
+} from "lucide-react";
 import Loading from "../../components/Loading";
 import PageHero from "../../components/layout/PageHero";
 import LeaveHistory from "../../components/leave/LeaveHistory";
@@ -8,12 +17,20 @@ import api from "../../api/axios";
 const ManagerLeaves = () => {
   const [leaves, setLeaves] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [date, setDate] = useState("");
+  const [status, setStatus] = useState("");
 
   const fetchLeaves = useCallback(async () => {
     try {
       setLoading(true);
 
-      const { data } = await api.get("/leave");
+      const { data } = await api.get("/leave", {
+        params: {
+          date: date || undefined,
+          status: status || undefined
+        }
+      });
 
       setLeaves(data.data || []);
     } catch (error) {
@@ -22,25 +39,32 @@ const ManagerLeaves = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [date, status]);
 
   useEffect(() => {
     fetchLeaves();
   }, [fetchLeaves]);
 
-  if (loading) return <Loading />;
+  // if (loading) return <Loading />;
 
-  const totalRequests = leaves.length;
+  const filteredLeaves = leaves.filter((leave) => {
+    const name = `${leave.user?.firstName || ""} ${leave.user?.lastName || ""}`
+      .toLowerCase();
 
-  const pendingCount = leaves.filter(
+    return name.includes(search.toLowerCase());
+  });
+
+  const totalRequests = filteredLeaves.length;
+
+  const pendingCount = filteredLeaves.filter(
     (leave) => leave.status === "PENDING"
   ).length;
 
-  const approvedCount = leaves.filter(
+  const approvedCount = filteredLeaves.filter(
     (leave) => leave.status === "APPROVED"
   ).length;
 
-  const rejectedCount = leaves.filter(
+  const rejectedCount = filteredLeaves.filter(
     (leave) => leave.status === "REJECTED"
   ).length;
 
@@ -84,10 +108,54 @@ const ManagerLeaves = () => {
         ))}
       </div>
 
+      {/* Filters */}
+      <div className="card p-4 sm:p-5 mb-6">
+        <div className="flex flex-col sm:flex-row gap-3">
+
+          {/* Search Employee */}
+          <div className="relative flex-1">
+            <SearchIcon
+              className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4"
+            />
+
+            <input
+              placeholder="Search managers..."
+              className="w-full pl-10!"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+
+          {/* Date */}
+          <div className="relative">
+            <input
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              className="max-w-52"
+            />
+          </div>
+
+          {/* Status */}
+          <select
+            value={status}
+            onChange={(e) => setStatus(e.target.value)}
+            className="max-w-40"
+          >
+            <option value="">All Status</option>
+            <option value="PENDING">Pending</option>
+            <option value="APPROVED">Approved</option>
+            <option value="REJECTED">Rejected</option>
+          </select>
+
+        </div>
+      </div>
+
       <LeaveHistory
-        leaves={leaves}
+        leaves={filteredLeaves}
         isManagerAdmin={true}
         onUpdate={fetchLeaves}
+        loading = {loading}
       />
     </div>
   );

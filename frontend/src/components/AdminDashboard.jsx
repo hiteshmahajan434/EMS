@@ -1,8 +1,10 @@
 import { CalendarIcon, ClockIcon, UserCheckIcon, UsersIcon, User } from 'lucide-react'
-import React from 'react'
 import PageHero from './layout/PageHero'
+import { useAuth } from '../context/AuthContext'
 
 const AdminDashboard = ({data}) => {
+    const {user} = useAuth();
+    
     const stats = [
         {
             icon: UsersIcon,
@@ -34,7 +36,7 @@ const AdminDashboard = ({data}) => {
         <div className='animate-fade-in'>
             <PageHero
                 icon={User}
-                title={"Welcome back, Admin!"}
+                title={`Welcome back, ${user?.firstName || "Admin"}!`}
                 subtitle={"Here's your work summary for today."}
             />
 
