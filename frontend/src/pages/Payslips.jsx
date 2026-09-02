@@ -9,6 +9,7 @@ import toast from "react-hot-toast";
 const Payslips = () => {
   const [payslips, setPayslips] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [initialLoading, setInitialLoading] = useState(true);
 
   const fetchPayslips = useCallback(async () => {
     setLoading(true);
@@ -23,6 +24,7 @@ const Payslips = () => {
       );
     } finally {
       setLoading(false);
+      setInitialLoading(false);
     }
   }, []);
 
@@ -30,7 +32,7 @@ const Payslips = () => {
     fetchPayslips();
   }, [fetchPayslips]);
 
-  if(loading) return <Loading/>
+  if(initialLoading) return <Loading/>
 
   return (
     <div className="animate-fade-in">
@@ -42,7 +44,7 @@ const Payslips = () => {
       >
       </PageHero>
 
-      <PayslipsList payslips={payslips} isAdmin={false} />
+      <PayslipsList payslips={payslips} isAdmin={false} loading={loading}/>
     </div>
   )
 }

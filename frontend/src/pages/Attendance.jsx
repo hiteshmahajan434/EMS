@@ -14,6 +14,7 @@ const Attendance = () => {
   const [history, setHistory] = useState([]);
   const [isDeleted, setIsDeleted] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [initialLoading, setInitialLoading] = useState(true);
 
   const fetchData = useCallback(async () => {
       setLoading(true);
@@ -28,6 +29,7 @@ const Attendance = () => {
           toast.error(err.response?.data?.error || "Failed to load attendance");
       } finally {
           setLoading(false);
+          setInitialLoading(false);
       }
   }, []);
 
@@ -35,7 +37,7 @@ const Attendance = () => {
     fetchData();
   }, [fetchData]);
   
-  if(loading) return <Loading/>;
+    if(initialLoading) return <Loading/>;
 
 return (
     <div className="animate-fade-in space-y-8">

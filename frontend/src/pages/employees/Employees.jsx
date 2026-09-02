@@ -7,11 +7,13 @@ import PageHero from "../../components/layout/PageHero";
 import api from "../../api/axios";
 import toast from "react-hot-toast";
 import { useAuth } from '../../context/AuthContext';
+import Loading from "../../components/Loading";
 
 const Employees = () => {
     const [employees, setEmployees] = useState([]);
     const [managers, setManagers] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [initialLoading, setInitialLoading] = useState(true);
 
     const [search, setSearch] = useState("");
     const [selectedDept, setSelectedDept] = useState("");
@@ -57,6 +59,7 @@ const Employees = () => {
             );
         } finally {
             setLoading(false);
+            setInitialLoading(false);
         }
     };
 
@@ -69,6 +72,10 @@ const Employees = () => {
             .toLowerCase()
             .includes(search.toLowerCase())
     );
+
+    if (initialLoading) {
+        return <Loading />;
+    }
 
     return (
         <div className="animate-fade-in">
@@ -161,14 +168,12 @@ const Employees = () => {
             </div>
 
             {/* Employee Cards */}
-            {loading ? (
-                <div className="flex justify-center">
-                    <div className="animate-spin h-8 w-8 border-2 border-indigo-600 border-t-transparent rounded-full" />
-                </div>
-            ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5">
-
-                    {filtered.length === 0 ? (
+                    {loading ? (
+                        <div className="col-span-full flex justify-center py-16">
+                            <div className="animate-spin h-8 w-8 border-2 border-indigo-600 border-t-transparent rounded-full" />
+                        </div>
+                    ) : filtered.length === 0 ? (
                         <p className="col-span-full text-center py-16 text-slate-400 bg-white rounded-2xl border border-dashed border-slate-200">
                             No employees found
                         </p>
@@ -187,9 +192,7 @@ const Employees = () => {
                             />
                         ))
                     )}
-
                 </div>
-            )}
 
             {/* =====================================================
                 CREATE EMPLOYEE MODAL

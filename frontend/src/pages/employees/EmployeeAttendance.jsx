@@ -7,10 +7,12 @@ import {
   getWorkingHoursDisplay
 } from "../../assets/assets";
 import api from "../../api/axios";
+import Loading from "../../components/Loading";
 
 const EmployeeAttendance = () => {
   const [attendance, setAttendance] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [initialLoading, setInitialLoading] = useState(true);
 
   const [search, setSearch] = useState("");
   const [selectedDept, setSelectedDept] = useState("");
@@ -51,6 +53,7 @@ const EmployeeAttendance = () => {
 
     } finally {
       setLoading(false);
+      setInitialLoading(false);
     }
   }, [selectedDept, selectedStatus, selectedDate]);
 
@@ -114,6 +117,9 @@ const EmployeeAttendance = () => {
    */
   const leaveCount = 0;
 
+  if (initialLoading) {
+    return <Loading />;
+  }
 
   return (
     <div>
@@ -317,8 +323,8 @@ const EmployeeAttendance = () => {
                       <div
                         className="
                           animate-spin
-                          h-7
-                          w-7
+                          h-8
+                          w-8
                           border-2
                           border-indigo-600
                           border-t-transparent

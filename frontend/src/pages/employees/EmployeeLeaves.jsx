@@ -8,6 +8,7 @@ import api from "../../api/axios";
 const EmployeeLeave = () => {
   const [leaves, setLeaves] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [date, setDate] = useState("");
   const [status, setStatus] = useState("");
@@ -29,14 +30,13 @@ const EmployeeLeave = () => {
       setLeaves([]);
     } finally {
       setLoading(false);
+      setInitialLoading(false);
     }
   }, [date, status]);
 
   useEffect(() => {
     fetchLeaves();
   }, [fetchLeaves]);
-
-  if (loading) return <Loading />;
 
   const filteredLeaves = leaves.filter((leave) => {
     const name = `${leave.user?.firstName || ""} ${leave.user?.lastName || ""}`
@@ -66,6 +66,7 @@ const EmployeeLeave = () => {
     { label: "Rejected",value: rejectedCount,icon: XCircleIcon },
   ];
 
+  if (initialLoading) return <Loading />;
   return (
     <div>
       <PageHero

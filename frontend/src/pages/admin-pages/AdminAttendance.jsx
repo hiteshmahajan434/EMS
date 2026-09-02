@@ -5,11 +5,13 @@ import PageHero from "../../components/layout/PageHero";
 import { DEPARTMENTS, getWorkingHoursDisplay } from "../../assets/assets";
 import api from "../../api/axios";
 import toast from "react-hot-toast";
+import Loading from "../../components/Loading";
 
 const AdminAttendance = () => {
   const [attendance, setAttendance] = useState([]);
 
   const [loading, setLoading] = useState(true);
+  const [initialLoading, setInitialLoading] = useState(true);
 
   const [search, setSearch] = useState("");
   const [selectedRole, setSelectedRole] = useState("");
@@ -60,6 +62,7 @@ const AdminAttendance = () => {
       setAttendance([]);
     } finally {
       setLoading(false);
+      setInitialLoading(false);
     }
   }, [
     selectedRole,
@@ -109,6 +112,7 @@ const AdminAttendance = () => {
 
   const leaveCount = 0;
 
+  if (initialLoading) return <Loading />;
 
   return (
     <div>

@@ -11,6 +11,7 @@ const AdminPayslips = () => {
   const [payslips, setPayslips] = useState([]);
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [initialLoading, setInitialLoading] = useState(true);   
 
   const [search, setSearch] = useState("");
   const [role, setRole] = useState("");
@@ -36,6 +37,7 @@ const AdminPayslips = () => {
       setPayslips([]);
     } finally {
       setLoading(false);
+      setInitialLoading(false);
     }
   }, [role, month, year]);
 
@@ -51,7 +53,7 @@ const AdminPayslips = () => {
     return name.includes(search.toLowerCase());
   });
 
-  // if(loading) return <Loading/>
+  if(initialLoading) return <Loading/>
 
   return (
     <div className="animate-fade-in">

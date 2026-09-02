@@ -10,6 +10,7 @@ import toast from 'react-hot-toast';
 const Leave = () => {
   const [leaves, setLeaves] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [isDeleted, setIsDeleted] = useState(false);
   const isAdmin = false;
@@ -25,6 +26,7 @@ const Leave = () => {
       toast.error(err.response?.data?.error || "Failed to load leaves");
     } finally {
       setLoading(false);
+      setInitialLoading(false);
     }
   }, []);
 
@@ -32,7 +34,7 @@ const Leave = () => {
     fetchLeaves();
   }, [fetchLeaves]);
 
-  if(loading) return <Loading/>
+  if(initialLoading) return <Loading/>
 
   const approvedLeaves = leaves.filter((l) => l.status === "APPROVED");
   const sickCount = approvedLeaves.filter((l) => l.type === "SICK").length;
@@ -87,7 +89,7 @@ const Leave = () => {
         </div>
       )}
 
-      <LeaveHistory leaves={leaves} isManagerAdmin={isAdmin} onUpdate={fetchLeaves}/>
+      <LeaveHistory leaves={leaves} isManagerAdmin={isAdmin} onUpdate={fetchLeaves} loading={loading}/>
 
       <ApplyLeave open={showModal} onClose={() => setShowModal(false)} onSuccess={fetchLeaves}/>
     </div>

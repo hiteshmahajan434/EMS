@@ -17,6 +17,7 @@ import api from "../../api/axios";
 const ManagerLeaves = () => {
   const [leaves, setLeaves] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [date, setDate] = useState("");
   const [status, setStatus] = useState("");
@@ -38,6 +39,7 @@ const ManagerLeaves = () => {
       setLeaves([]);
     } finally {
       setLoading(false);
+      setInitialLoading(false);
     }
   }, [date, status]);
 
@@ -74,6 +76,10 @@ const ManagerLeaves = () => {
     { label: "Approved",value: approvedCount,icon: CheckCircle2Icon },
     { label: "Rejected",value: rejectedCount,icon: XCircleIcon },
   ];
+
+  if (initialLoading) {
+    return <Loading />;
+  }
 
   return (
     <div>
