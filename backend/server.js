@@ -10,6 +10,8 @@ import attendanceRouter from "./routes/attendanceRoutes.js";
 import leaveRouter from "./routes/leaveRoutes.js";
 import payslipRouter from "./routes/payslipRoutes.js";
 import dashboardRouter from "./routes/dashboardRoutes.js";
+import { serve } from "inngest/express";
+import { functions, inngest } from "./inngest/index.js";
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -18,6 +20,7 @@ const PORT = process.env.PORT || 4000;
 app.use(cors()); //All requests will be parsed through cors
 app.use(express.json());
 app.use(multer().none());
+app.use("/api/inngest", serve({ client: inngest, functions }));
 
 //Routes
 app.get("/", function(req, res){
