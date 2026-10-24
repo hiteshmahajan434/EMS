@@ -4,21 +4,28 @@ import { DEPARTMENTS } from "../assets/assets";
 import { Loader2Icon } from "lucide-react";
 import api from "../api/axios";
 import toast from "react-hot-toast";
+import { useAuth } from "../context/AuthContext";
 
 const EmployeeForm = ({
     initialData,
     onSuccess,
     onCancel,
     userType = "employee",
+    managers = [],
     readOnly = false
 }) => {
 
     const navigate = useNavigate();
+    const { user } = useAuth();
 
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
 
     const isEditMode = !!initialData;
+    const needsManagerAssignment =
+        user?.role === "admin" &&
+        userType === "employee" &&
+        !isEditMode;
 
     const displayRole =
         userType === "manager"
@@ -65,6 +72,10 @@ const EmployeeForm = ({
 
                 bio: form.bio.value
             };
+
+            if (needsManagerAssignment) {
+                payload.manager = form.manager.value;
+            }
 
             /*
              * Password
@@ -349,6 +360,36 @@ const EmployeeForm = ({
                         />
 
                     </div>
+
+                    {needsManagerAssignment && (
+                        <div>
+                            <label className="block mb-2">
+                                Assign Manager
+                            </label>
+
+                            <select
+                                name="manager"
+                                required
+                                defaultValue=""
+                                disabled={readOnly}
+                            >
+                                <option value="" disabled>
+                                    {managers.length
+                                        ? "Select Manager"
+                                        : "No active managers available"}
+                                </option>
+
+                                {managers.map((manager) => (
+                                    <option
+                                        value={manager._id}
+                                        key={manager._id}
+                                    >
+                                        {manager.firstName} {manager.lastName}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                    )}
 
 
                     {/* Status */}

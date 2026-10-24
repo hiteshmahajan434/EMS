@@ -242,6 +242,7 @@ const Employees = () => {
 
                             <EmployeeForm
                                 userType="employee"
+                                managers={managers}
                                 onSuccess={() => {
                                     setShowCreateModal(false);
                                     fetchEmployees();

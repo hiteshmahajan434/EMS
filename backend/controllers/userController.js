@@ -1,5 +1,6 @@
 import User from "../models/User.js";
 import bcrypt from "bcrypt";
+import mongoose from "mongoose";
 
 //Get Users
 //GET /api/users
@@ -38,6 +39,7 @@ export const getUsers = async (req, res) => {
             const managers = await User.find({
                 organization: req.user.organization,
                 role: "manager",
+                isDeleted: false,
             })
             .select("_id firstName lastName")
             .sort({ firstName: 1 })
@@ -125,10 +127,40 @@ export const createUser = async (req, res) => {
             bio
         } = req.body;
 
+        if (
+            (req.user.role === "manager" && role !== "employee") ||
+            (req.user.role === "admin" && !["employee", "manager"].includes(role))
+        ) {
+            return res.status(403).json({
+                error: "You are not allowed to create this user role"
+            });
+        }
+
         let manager = null;
 
-        if(req.user.role == "manager"){
+        if (req.user.role === "manager") {
             manager = req.user.id;
+        } else if (role === "employee") {
+            if (!mongoose.isValidObjectId(req.body.manager)) {
+                return res.status(400).json({
+                    error: "Please assign a manager to this employee"
+                });
+            }
+
+            const assignedManager = await User.findOne({
+                _id: req.body.manager,
+                organization: req.user.organization,
+                role: "manager",
+                isDeleted: false
+            }).select("_id");
+
+            if (!assignedManager) {
+                return res.status(400).json({
+                    error: "Please select an active manager in your organization"
+                });
+            }
+
+            manager = assignedManager._id;
         }
 
         const organization = req.user.organization;
