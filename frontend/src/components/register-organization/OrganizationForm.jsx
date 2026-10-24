@@ -1,4 +1,5 @@
 import React from "react";
+import { INDUSTRIES } from "../../assets/assets";
 
 const OrganizationForm = ({ formData, handleChange }) => {
   return (
@@ -69,15 +70,11 @@ const OrganizationForm = ({ formData, handleChange }) => {
             onChange={handleChange}
           >
             <option value="">Select Industry</option>
-            <option value="Technology">Technology</option>
-            <option value="Finance">Finance</option>
-            <option value="Healthcare">Healthcare</option>
-            <option value="Education">Education</option>
-            <option value="Manufacturing">Manufacturing</option>
-            <option value="Retail">Retail</option>
-            <option value="Construction">Construction</option>
-            <option value="Hospitality">Hospitality</option>
-            <option value="Other">Other</option>
+            {INDUSTRIES.map((industry) => (
+              <option value={industry} key={industry}>
+                {industry}
+              </option>
+            ))}
           </select>
         </div>
 
