@@ -2,6 +2,16 @@ import User from "../models/User.js";
 import Organization from "../models/Organization.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import sendEmail from "../config/nodemailer.js";
+
+const escapeHtml = (value) =>
+    String(value ?? "").replace(/[&<>"']/g, (character) => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;"
+    })[character]);
 
 //Register Organization
 //POST /api/auth/register-organization
@@ -67,9 +77,39 @@ export const registerOrg = async (req, res) => {
         newOrganization.adminId = newAdmin._id;
         await newOrganization.save();
 
+        let welcomeEmailSent = true;
+        try {
+            await sendEmail({
+                to: newAdmin.email,
+                subject: "Welcome to OneCore!",
+                body: `
+                    <div style="max-width: 600px; font-family: Arial, sans-serif; line-height: 1.6;">
+                        <h2>Welcome to OneCore EMS, ${escapeHtml(newAdmin.firstName)}!</h2>
+                        <p>Your organization has been successfully registered on OneCore EMS.</p>
+                        <p>You can now log in using your registered email address and the password you created during registration.</p>
+                        <p>As your organization's administrator, you can:</p>
+                        <ul>
+                            <li>Manage employees and managers</li>
+                            <li>Monitor attendance</li>
+                            <li>Review leave applications</li>
+                            <li>Manage payslips</li>
+                        </ul>
+                        <p>We're excited to have you on board!</p>
+                        <p>Best regards,<br/><strong>OneCore</strong></p>
+                    </div>
+                `
+            });
+        } catch (emailError) {
+            console.error("Failed to send organization admin welcome email:", emailError);
+            welcomeEmailSent = false;
+        }
+
         return res.status(201).json({
             success: true,
-            message: "Organization registered successfully"
+            message: welcomeEmailSent
+                ? "Organization registered successfully"
+                : "Organization registered successfully, but the welcome email could not be sent",
+            welcomeEmailSent
         });
     } catch (error) {
         console.error(error);

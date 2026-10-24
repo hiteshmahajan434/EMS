@@ -70,7 +70,11 @@ const RegisterOrganizationModal = ({ open, onClose }) => {
                 payload
             );
 
-            toast.success(data.message);
+            if (data.welcomeEmailSent === false) {
+                toast.error(data.message);
+            } else {
+                toast.success(data.message);
+            }
             onClose();
 
         } catch (err) {
