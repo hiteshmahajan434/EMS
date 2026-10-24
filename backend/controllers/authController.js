@@ -81,10 +81,10 @@ export const registerOrg = async (req, res) => {
 //POST /api/auth/login
 export const login = async (req, res) => {
     try {
-        const {email, password} = req.body;
+        const {email, password, portalRole} = req.body;
 
-        if(!email || !password){
-            return res.status(400).json({error: "Email and password are required"});
+        if(!email || !password || !["admin", "employee"].includes(portalRole)){
+            return res.status(400).json({error: "Email, password, and a valid login portal are required"});
         }
 
         const user = await User.findOne({email});
@@ -101,6 +101,16 @@ export const login = async (req, res) => {
         const isValid = await bcrypt.compare(password, user.password);
         if(!isValid){
             return res.status(401).json({error: "Invalid credentials"});
+        }
+
+        const allowedRoles = portalRole === "admin"
+            ? ["admin"]
+            : ["employee", "manager"];
+
+        if (!allowedRoles.includes(user.role)) {
+            return res.status(403).json({
+                error: "This account cannot access the selected portal"
+            });
         }
 
         const payload = {

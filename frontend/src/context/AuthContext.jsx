@@ -34,10 +34,11 @@ export function AuthProvider({children}){
         refreshSession();
     }, []);
 
-    const login = async (email, password) => {
+    const login = async (email, password, portalRole) => {
         const { data } = await api.post("/auth/login", {
             email,
-            password
+            password,
+            portalRole
         });
 
         localStorage.setItem("token", data.token);

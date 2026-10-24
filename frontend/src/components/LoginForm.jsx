@@ -23,7 +23,7 @@ const LoginForm = ({role, title, subtitle}) => {
         setError("");
         setLoading(true);
         try {
-            await login(email, password);
+            await login(email, password, role);
             toast.success("Login successful")
             navigate("/dashboard");
         } catch (error) {
