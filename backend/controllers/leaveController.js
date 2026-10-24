@@ -1,26 +1,26 @@
 import User from "../models/User.js";
 import Leave from "../models/Leave.js";
 import { inngest } from "../inngest/index.js";
+import AppError from "../middlewares/AppError.js";
 
 //Employee/Manager apply leave to Manager/Admin
 //POST /api/leave
 export const createLeave = async (req, res) => {
-    try {
         const {type, startDate, endDate, reason} = req.body;
         const userId = req.user.id;
         const organizationId = req.user.organization;
 
         const user = await User.findById(userId);
         if(!user){
-            return res.status(404).json({error: "User not found"});
+            throw new AppError("User not found", 404);
         }
 
         if(user.isDeleted){
-            return res.status(403).json({error: "Your account is deactivated. You cannot apply for leave"});
+            throw new AppError("Your account is deactivated. You cannot apply for leave", 403);
         } 
 
         if(!type || !startDate || !endDate || !reason){
-            return res.status(400).json({error: "All fields are required"})
+            throw new AppError("All fields are required", 400);
         } 
 
         const today = new Date();
@@ -30,11 +30,11 @@ export const createLeave = async (req, res) => {
         const end = new Date(endDate);
 
         if(start <= today || end <= today){
-            return res.status(400).json({error: "Leave dates must be in the future"});
+            throw new AppError("Leave dates must be in the future", 400);
         }
 
         if(start > end){
-            return res.status(400).json({error: "End date cannot be before start date"});
+            throw new AppError("End date cannot be before start date", 400);
         }
 
         const overlap = await Leave.findOne({
@@ -45,9 +45,7 @@ export const createLeave = async (req, res) => {
         });
 
         if (overlap) {
-            return res.status(400).json({
-                error: "Leave already exists for selected dates"
-            });
+            throw new AppError("Leave already exists for selected dates", 400);
         }
 
         const newLeave = await Leave.create({
@@ -68,22 +66,17 @@ export const createLeave = async (req, res) => {
         });
 
         return res.json({success: true, data: newLeave});        
-    } catch (error) {
-        console.log(error);
-        return res.status(500).json({error: "Leave creation failed"});
-    }
 }
 
 //Get self leaves
 //GET /api/leave/my
 export const getMyLeave = async (req, res) => {
-    try {
         const userId = req.user.id;
 
         const user = await User.findById(userId).lean();
 
         if(!user){
-            return res.status(404).json({error: "User not found"});
+            throw new AppError("User not found", 404);
         }
 
         const leaves = await Leave.find({userId: userId}).sort({createdAt: -1});
@@ -95,15 +88,11 @@ export const getMyLeave = async (req, res) => {
                 id: userId
             }
         });
-    } catch (error) {
-        return res.status(500).json({error: "Leave fetching failed"});
-    }
 }
 
 // Manager / Admin View Pending Leaves
 // GET /api/leave
 export const getLeave = async (req, res) => {
-    try {
         const { date, status } = req.query;
 
         let filter = {};
@@ -160,29 +149,22 @@ export const getLeave = async (req, res) => {
         });
 
         return res.json({data});
-    } catch (error) {
-        console.error("Get leaves error:", error);
-        return res.status(500).json({error: "Failed to fetch leaves"});
-    }
 }
 
 //Update leave status
 //PATCH /api/leave/:id
 export const updateLeave = async (req, res) => {
-    try {
         const { status } = req.body;
 
         if (!["APPROVED", "REJECTED"].includes(status)) {
-        return res.status(400).json({ error: "Invalid status" });
+            throw new AppError("Invalid status", 400);
         }
 
         const leave=await Leave.findById(req.params.id)
             .populate("userId");
 
         if(!leave){
-            return res.status(404).json({
-                error:"Leave not found"
-            });
+            throw new AppError("Leave not found", 404);
         }
 
         // -------------------------------
@@ -191,15 +173,11 @@ export const updateLeave = async (req, res) => {
 
         if (req.user.role === "manager") {
             if (leave.userId.role !== "employee") { //After populating userId we can use like this leave.userId.role
-                return res.status(403).json({
-                    error: "Managers can approve only employee leaves"
-                });
+                throw new AppError("Managers can approve only employee leaves", 403);
             }
 
             if (String(leave.userId.manager) !== String(req.user.id)) {
-                return res.status(403).json({
-                    error: "Employee does not report to you"
-                });
+                throw new AppError("Employee does not report to you", 403);
             }
         }
 
@@ -209,21 +187,15 @@ export const updateLeave = async (req, res) => {
 
         else if (req.user.role === "admin") {
             if (leave.userId.role !== "manager") {
-                return res.status(403).json({
-                    error: "Admins can approve only manager leaves"
-                });
+                throw new AppError("Admins can approve only manager leaves", 403);
             }
 
             if (String(leave.userId.organization) !==String(req.user.organization)) {
-                return res.status(403).json({
-                    error: "Unauthorized"
-                });
+                throw new AppError("Unauthorized", 403);
             }
         }
         else {
-            return res.status(403).json({
-                error: "Access denied"
-            });
+            throw new AppError("Access denied", 403);
         }
 
         leave.status = status;
@@ -231,8 +203,4 @@ export const updateLeave = async (req, res) => {
         await leave.save();
         
         return res.json({success: true, data: leave});
-    } catch (error) {
-        console.log(error);
-        return res.status(500).json({ error: "Failed to update leave" });
-    }
 }

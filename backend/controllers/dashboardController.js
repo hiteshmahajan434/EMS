@@ -2,6 +2,7 @@ import User from "../models/User.js";
 import Attendance from "../models/Attendance.js";
 import Leave from "../models/Leave.js";
 import Payslip from "../models/Payslip.js";
+import AppError from "../middlewares/AppError.js";
 
 // ===============================
 // Employee Dashboard Data
@@ -56,7 +57,7 @@ const getEmployeeDashboardData = async (req) => {
     ]);
 
     if (!employee) {
-        throw new Error("Employee not found");
+        throw new AppError("Employee not found", 404);
     }
 
     return {
@@ -352,7 +353,6 @@ const getAdminDashboardData = async (req) => {
 // ===============================
 
 export const getDashboard = async (req, res) => {
-    try {
         const role = req.user.role;
 
         // Employee
@@ -385,21 +385,5 @@ export const getDashboard = async (req, res) => {
         }
 
         // Invalid role
-        return res.status(403).json({
-            error: "Invalid user role"
-        });
-
-    } catch (error) {
-        console.error("Dashboard Error:", error);
-
-        if (error.message === "Employee not found") {
-            return res.status(404).json({
-                error: "Employee not found"
-            });
-        }
-
-        return res.status(500).json({
-            error: "Failed to fetch dashboard"
-        });
-    }
+        throw new AppError("Invalid user role", 403);
 };

@@ -1,22 +1,22 @@
 import User from "../models/User.js";
 import Attendance from "../models/Attendance.js";
 import { inngest } from "../inngest/index.js";
+import AppError from "../middlewares/AppError.js";
 
 //Clock in out for employee/manager
 //POST /api/attendance/clock
 export const clockInOut = async (req, res) => {
-    try {
         const userId = req.user.id;
         const organizationId = req.user.organization;
 
         const user = await User.findById(userId);
 
         if (!user) {
-            return res.status(403).json({ error: "Employee not found" });
+            throw new AppError("Employee not found", 403);
         }
 
         if (user.isDeleted) {
-            return res.status(403).json({ error: "Your account is deactivated. You cannot clock in/out" });
+            throw new AppError("Your account is deactivated. You cannot clock in/out", 403);
         }
 
         const today = new Date();
@@ -53,7 +53,7 @@ export const clockInOut = async (req, res) => {
 
         // ---------------- Already Checked Out ----------------
         if (existingAttendance.checkOut) {
-            return res.status(400).json({ success: false, error: "You have already checked out today" });
+            throw new AppError("You have already checked out today", 400);
         }
 
         // ---------------- Clock Out ----------------
@@ -84,21 +84,16 @@ export const clockInOut = async (req, res) => {
         await existingAttendance.save();
 
         return res.json({ success: true, type: "CHECK_OUT", data: existingAttendance });
-    } catch (error) {
-        console.error("Clock in out error", error);
-        return res.status(500).json({ success: false, error: "Clock in out operation failed" });
-    }
 }
 
 //GET Self Attendance Employee/Admin
 //GET /api/attendance/my
 export const getMyAttendance = async (req, res) => {
-    try {
         const userId = req.user.id;
 
         const user = await User.findById(userId);
         if (!user) {
-            return res.status(404).json({ error: "User not found" });
+            throw new AppError("User not found", 404);
         }
 
         const now = new Date();
@@ -159,15 +154,11 @@ export const getMyAttendance = async (req, res) => {
             }
         });
 
-    } catch (error) {
-        return res.status(500).json({ error: "Failed to fetch attendance" });
-    }
 }
 
 //GET All employee attendance to manager
 //GET /api/attendance/team
 export const getTeamAttendance = async (req, res) => {
-    try {
         const { firstName, status, date, department, filterRole } = req.query;
 
         const organizationId = req.user.organization;
@@ -218,44 +209,33 @@ export const getTeamAttendance = async (req, res) => {
             .sort({ date: -1 });
 
         return res.status(200).json(attendance);
-    } catch (error) {
-        return res.status(500).json({ message: error.message });
-    }
 }
 
 //Manager/Admin Single Employee Attendance
 //GET /api/attendance/team/:id
 export const getUserAttendance = async (req, res) => {
-    try {
         const userId = req.params.id;
 
         const user = await User.findById(userId);
 
-        if (!user) return res.status(404).json({ error: "User not found" });
+        if (!user) throw new AppError("User not found", 404);
 
         if (
             req.user.role === "manager" &&
             (!user.manager ||
                 user.manager.toString() !== req.user.id.toString())
         ) {
-            return res.status(403).json({
-                error: "Unauthorized"
-            });
+            throw new AppError("Unauthorized", 403);
         }
 
         if (
             user.organization.toString() !==
             req.user.organization.toString()
         ) {
-            return res.status(403).json({
-                error: "Unauthorized"
-            });
+            throw new AppError("Unauthorized", 403);
         }
 
         const attendance = await Attendance.find({ userId }).sort({ date: -1 });
 
         return res.status(200).json(attendance);
-    } catch (error) {
-        return res.status(500).json({ message: error.message });
-    }
 }

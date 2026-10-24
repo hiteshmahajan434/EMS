@@ -2,6 +2,7 @@ import User from "../models/User.js";
 import bcrypt from "bcrypt";
 import mongoose from "mongoose";
 import sendEmail from "../config/nodemailer.js";
+import AppError from "../middlewares/AppError.js";
 
 const escapeHtml = (value) =>
     String(value ?? "").replace(/[&<>"']/g, (character) => ({
@@ -21,7 +22,6 @@ const escapeHtml = (value) =>
 // Query MongoDB
 // Return the response
 export const getUsers = async (req, res) => {
-    try {
         const { department, manager, role } = req.query;
 
         // =========================
@@ -103,13 +103,6 @@ export const getUsers = async (req, res) => {
             });
         }
 
-    } catch (error) {
-        console.error("Get users error:", error);
-
-        return res.status(500).json({
-            error: "Failed to fetch users"
-        });
-    }
 };
 
 //Create Users
@@ -121,7 +114,6 @@ export const getUsers = async (req, res) => {
 // Create employee
 // Return 201 Created
 export const createUser = async (req, res) => {
-    try {
         const {
             firstName, 
             lastName,
@@ -141,9 +133,7 @@ export const createUser = async (req, res) => {
             (req.user.role === "manager" && role !== "employee") ||
             (req.user.role === "admin" && !["employee", "manager"].includes(role))
         ) {
-            return res.status(403).json({
-                error: "You are not allowed to create this user role"
-            });
+            throw new AppError("You are not allowed to create this user role", 403);
         }
 
         let manager = null;
@@ -152,9 +142,7 @@ export const createUser = async (req, res) => {
             manager = req.user.id;
         } else if (role === "employee") {
             if (!mongoose.isValidObjectId(req.body.manager)) {
-                return res.status(400).json({
-                    error: "Please assign a manager to this employee"
-                });
+                throw new AppError("Please assign a manager to this employee", 400);
             }
 
             const assignedManager = await User.findOne({
@@ -165,9 +153,7 @@ export const createUser = async (req, res) => {
             }).select("_id");
 
             if (!assignedManager) {
-                return res.status(400).json({
-                    error: "Please select an active manager in your organization"
-                });
+                throw new AppError("Please select an active manager in your organization", 400);
             }
 
             manager = assignedManager._id;
@@ -176,7 +162,7 @@ export const createUser = async (req, res) => {
         const organization = req.user.organization;
 
         if(!firstName || !lastName || !email || !password || !joiningDate){
-            return res.status(400).json({error: "Missing required fields"});
+            throw new AppError("Missing required fields", 400);
         }
 
         const hashed = await bcrypt.hash(password, 10);
@@ -256,13 +242,6 @@ export const createUser = async (req, res) => {
                 ? "Account created, but the welcome email could not be sent"
                 : undefined
         });
-    } catch (error) {
-        if(error.code == 11000){
-            return res.status(400).json({error: "Email already exists"});
-        }
-        console.log("Create employee error:", error);
-        return res.status(500).json({error: "Failed to create employee"});
-    }
 }
 
 //Update user
@@ -275,15 +254,12 @@ export const createUser = async (req, res) => {
 // Save
 // Return success
 export const updateUser = async (req, res) => {
-    try {
          const { id } = req.params;
 
         const user = await User.findById(id);
 
         if (!user) {
-            return res.status(404).json({
-                error: "User not found"
-            });
+            throw new AppError("User not found", 404);
         }
 
         const {
@@ -326,13 +302,6 @@ export const updateUser = async (req, res) => {
         await user.save();
 
         return res.json({success: true});
-    } catch (error) {
-        if(error.code == 11000){
-            return res.status(400).json({error: "Email already exists"});
-        }
-        console.log("Update employee error:", error);
-        return res.status(500).json({error: "Failed to update user"});
-    }
 }
 
 //Delete User
@@ -345,19 +314,16 @@ export const updateUser = async (req, res) => {
 // Save
 // Return success
 export const deleteUser = async (req, res) => {
-    try {
         const {id} = req.params;
 
         const user = await User.findById(id);
 
         if(!user){
-            return res.status(404).json({error: "User not exists"});
+            throw new AppError("User not exists", 404);
         }
 
         if (user.isDeleted) {
-            return res.status(400).json({
-                error: "User is already deleted"
-            });
+            throw new AppError("User is already deleted", 400);
         }
 
         user.isDeleted = true;
@@ -369,7 +335,4 @@ export const deleteUser = async (req, res) => {
             success: true,
             message: "User deleted successfully"
         });
-    } catch (error) {
-        return res.status(500).json({error: "Failed to delete user"});
-    }
 }

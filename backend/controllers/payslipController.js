@@ -1,35 +1,31 @@
 import User from "../models/User.js";
 import Payslip from "../models/Payslip.js";
+import AppError from "../middlewares/AppError.js";
 
 //Create Payslip
 //POST /api/payslip
 export const createPayslip = async (req, res) => {
-    try {
         const {userId, month, year, allowances, deductions} = req.body;
         const organizationId = req.user.organization;
 
         if(!userId || !month || !year){
-            return res.status(400).json({error: "Missing fields"});
+            throw new AppError("Missing fields", 400);
         }
 
         const user = await User.findById(userId);
 
         if (!user) {
-            return res.status(404).json({ error: "User not found" });
+            throw new AppError("User not found", 404);
         }
 
         // Only Admin can generate payslips
         if (req.user.role !== "admin") {
-            return res.status(403).json({
-                error: "Only admin can generate payslips"
-            });
+            throw new AppError("Only admin can generate payslips", 403);
         }
 
         // Admin can generate only for users in the same organization
         if (user.organization.toString() !== req.user.organization.toString()) {
-            return res.status(403).json({
-                error: "User does not belong to your organization"
-            });
+            throw new AppError("User does not belong to your organization", 403);
         }
 
         const basicSalary = user.basicSalary;
@@ -41,9 +37,7 @@ export const createPayslip = async (req, res) => {
         });
 
         if (existing) {
-            return res.status(400).json({
-                error: "Payslip already generated"
-            });
+            throw new AppError("Payslip already generated", 400);
         }
 
         const netSalary = Number(basicSalary) + Number(allowances || 0) - Number(deductions || 0);
@@ -60,14 +54,10 @@ export const createPayslip = async (req, res) => {
         });
 
         return res.status(201).json({success: true, data: payslip});        
-    } catch (error) {
-        return res.status(500).json({error: "Payslip creation failed"});
-    }
 }
 
 //GET /api/payslip
 export const getPayslips = async (req, res) => {
-    try {
         // ADMIN
         if (req.user.role === "admin") {
 
@@ -138,40 +128,28 @@ export const getPayslips = async (req, res) => {
                 payslips
             });
         }
-    } catch (error) {
-        console.error("Get Payslips Error:", error);
-
-        return res.status(500).json({
-            error: "Failed to fetch payslips"
-        });
-    }
 };
 
 //Get payslip by  payslip ID
 //GET /api/payslip/:id
 export const getPayslipByID = async (req, res) => {
-    try {
         const payslip = await Payslip.findById(req.params.id)
             .select("userId month year basicSalary allowances deductions netSalary")
             .populate("userId", "firstName lastName designation email organization")
             .lean();
 
         if(!payslip){
-            return res.status(404).json({error: "Payslip not found"});
+            throw new AppError("Payslip not found", 404);
         }
         // Employee -> Own Payslip
         if (req.user.role === "employee" && payslip.userId._id.toString() !== req.user.id) {
-            return res.status(403).json({
-                error: "Forbidden",
-            });
+            throw new AppError("Forbidden", 403);
         }
 
         // Manager -> Own Payslip only
         if (req.user.role === "manager" &&
             payslip.userId._id.toString() !== req.user.id) {
-            return res.status(403).json({
-                error: "Forbidden"
-            });
+            throw new AppError("Forbidden", 403);
         }
 
         // Admin -> Users in Same Organization
@@ -180,9 +158,7 @@ export const getPayslipByID = async (req, res) => {
                 !payslip.userId ||
                 payslip.userId.organization?.toString() !== req.user.organization.toString()
             ) {
-                return res.status(403).json({
-                    error: "Forbidden"
-                });
+                throw new AppError("Forbidden", 403);
             }
         }
 
@@ -201,7 +177,4 @@ export const getPayslipByID = async (req, res) => {
                 email: payslip.userId.email
             }
         });
-    } catch (error) {
-        return res.status(500).json({error: "Failed to fetch payslip"});
-    }
 }

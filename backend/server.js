@@ -21,6 +21,8 @@ import {
     generalLimiter,
     authLimiter
 } from "./middlewares/rateLimiter.js";
+import AppError from "./middlewares/AppError.js";
+import errorHandler from "./middlewares/errorHandler.js";
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -58,6 +60,11 @@ app.use("/api/attendance", attendanceRouter);
 app.use("/api/leave", leaveRouter);
 app.use("/api/payslip", payslipRouter);
 app.use("/api/dashboard", dashboardRouter);
+
+app.use((req, res, next) => {
+    next(new AppError(`Route not found: ${req.method} ${req.originalUrl}`, 404));
+});
+app.use(errorHandler);
 
 // Connect to database and start server
 await connectDB();

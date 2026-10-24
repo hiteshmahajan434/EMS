@@ -1,46 +1,42 @@
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
+import AppError from "./AppError.js";
 
 export const protect = async (req, res, next) => {
-    try {
-        const authHeader = req.headers.authorization;
-        if(!authHeader || !authHeader.startsWith("Bearer ")){
-            return res.status(401).json({error: "Unauthorized"});
-        }
-
-        const token = authHeader.split(' ')[1];
-        const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
-
-        if(!decoded){
-            return res.status(401).json({error: "Unauthorized"});
-        }
-
-        const user = await User.findById(decoded.id);
-
-        if (!user) {
-            return res.status(401).json({ error: "User not found" });
-        }
-
-        if (user.isDeleted) {
-            return res.status(403).json({
-                error: "Your account has been deactivated."
-            });
-        }
-
-        req.user = decoded;
-        next();
-    } catch (error) {
-        return res.status(401).json({error: "Unauthorized"});
+    const authHeader = req.headers.authorization;
+    if(!authHeader || !authHeader.startsWith("Bearer ")){
+        throw new AppError("Unauthorized", 401);
     }
+
+    let decoded;
+    try {
+        const token = authHeader.split(' ')[1];
+        decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+    } catch (error) {
+        if (error.name === "TokenExpiredError" || error.name === "JsonWebTokenError") {
+            throw new AppError("Unauthorized", 401);
+        }
+        throw error;
+    }
+
+    const user = await User.findById(decoded.id);
+
+    if (!user) {
+        throw new AppError("User not found", 401);
+    }
+
+    if (user.isDeleted) {
+        throw new AppError("Your account has been deactivated.", 403);
+    }
+
+    req.user = decoded;
+    next();
 };
 
 export const authorize = (...roles) => {
     return (req, res, next) => {
-
         if (!roles.includes(req.user.role)) {
-            return res.status(403).json({
-                error: "Forbidden"
-            });
+            return next(new AppError("Forbidden", 403));
         }
 
         next();

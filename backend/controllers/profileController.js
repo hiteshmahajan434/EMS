@@ -1,5 +1,6 @@
 import User from "../models/User.js";
 import Organization from "../models/Organization.js";
+import AppError from "../middlewares/AppError.js";
 
 const INDUSTRIES = [
     "Technology",
@@ -16,7 +17,6 @@ const INDUSTRIES = [
 //Get Profile
 //GET /api/profile
 export const getProfile = async (req, res) => {
-    try {
         const userId = req.user.id;
         const user = await User.findById(userId)
             .select("-password")
@@ -26,29 +26,24 @@ export const getProfile = async (req, res) => {
             );
 
         if(!user){
-            return res.status(404).json({error: "User not found"});
+            throw new AppError("User not found", 404);
         }
         
         return res.json(user);
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json({error: "Failed to fetch profile"});
-    }
 }
 
 //Update Profile
 //PUT /api/profile
 export const updateProfile = async (req, res) => {
-    try {
         const userId = req.user.id;
         const user = await User.findById(userId);
 
         if(!user){
-            return res.status(404).json({error: "User not found"});
+            throw new AppError("User not found", 404);
         }
 
         if(user.isDeleted){
-            return res.status(403).json({error: "Your account is deactivated. You cannot update your profile."});
+            throw new AppError("Your account is deactivated. You cannot update your profile.", 403);
         }
 
         const userFields = [
@@ -78,39 +73,29 @@ export const updateProfile = async (req, res) => {
         const isEmployeeOrManager = ["employee", "manager"].includes(user.role);
 
         if (isEmployeeOrManager && organizationFields.some(hasField)) {
-            return res.status(403).json({
-                error: "Only admins can update organization details"
-            });
+            throw new AppError("Only admins can update organization details", 403);
         }
 
         if (managedEmployeeFields.some(hasField)) {
-            return res.status(403).json({
-                error: "Department, position, and basic salary must be updated by an administrator"
-            });
+            throw new AppError("Department, position, and basic salary must be updated by an administrator", 403);
         }
 
         for (const field of ["firstName", "lastName"]) {
             if (hasField(field) && (typeof req.body[field] !== "string" || !req.body[field].trim())) {
-                return res.status(400).json({
-                    error: `${field} is required`
-                });
+                throw new AppError(`${field} is required`, 400);
             }
         }
 
         for (const field of ["phone", "bio", "designation"]) {
             if (hasField(field) && typeof req.body[field] !== "string") {
-                return res.status(400).json({
-                    error: `${field} must be text`
-                });
+                throw new AppError(`${field} must be text`, 400);
             }
         }
 
         if (hasField("joiningDate")) {
             const joiningDate = new Date(req.body.joiningDate);
             if (!req.body.joiningDate || Number.isNaN(joiningDate.getTime())) {
-                return res.status(400).json({
-                    error: "Enter a valid join date"
-                });
+                throw new AppError("Enter a valid join date", 400);
             }
             user.joiningDate = joiningDate;
         }
@@ -126,38 +111,28 @@ export const updateProfile = async (req, res) => {
         let organization;
         if (hasOrganizationUpdates) {
             if (user.role !== "admin") {
-                return res.status(403).json({
-                    error: "Only admins can update organization details"
-                });
+                throw new AppError("Only admins can update organization details", 403);
             }
 
             for (const field of ["companyName", "companyPhone"]) {
                 if (hasField(field) && (typeof req.body[field] !== "string" || !req.body[field].trim())) {
-                    return res.status(400).json({
-                        error: `${field} is required`
-                    });
+                    throw new AppError(`${field} is required`, 400);
                 }
             }
 
             for (const field of ["website", "address"]) {
                 if (hasField(field) && typeof req.body[field] !== "string") {
-                    return res.status(400).json({
-                        error: `${field} must be text`
-                    });
+                    throw new AppError(`${field} must be text`, 400);
                 }
             }
 
             if (hasField("industry") && req.body.industry !== "" && !INDUSTRIES.includes(req.body.industry)) {
-                return res.status(400).json({
-                    error: "Select a valid industry"
-                });
+                throw new AppError("Select a valid industry", 400);
             }
 
             organization = await Organization.findById(user.organization);
             if (!organization) {
-                return res.status(404).json({
-                    error: "Organization not found"
-                });
+                throw new AppError("Organization not found", 404);
             }
 
             if (hasField("companyName")) organization.companyName = req.body.companyName.trim();
@@ -177,8 +152,4 @@ export const updateProfile = async (req, res) => {
         }
 
         return res.json({ success: true, message: "Profile updated successfully" });
-    } catch (error) {
-        console.error("Error updating profile", error);
-        return res.status(500).json({error: "Failed to update profile"});
-    }
 }
