@@ -5,10 +5,10 @@ import Payslip from "../models/Payslip.js";
 //POST /api/payslip
 export const createPayslip = async (req, res) => {
     try {
-        const {userId, month, year, basicSalary, allowances, deductions} = req.body;
+        const {userId, month, year, allowances, deductions} = req.body;
         const organizationId = req.user.organization;
 
-        if(!userId || !month || !year || !basicSalary){
+        if(!userId || !month || !year){
             return res.status(400).json({error: "Missing fields"});
         }
 
@@ -32,6 +32,8 @@ export const createPayslip = async (req, res) => {
             });
         }
 
+        const basicSalary = user.basicSalary;
+        
         const existing = await Payslip.findOne({
             userId,
             month,
@@ -76,7 +78,7 @@ export const getPayslips = async (req, res) => {
                 role: { $in: ["manager", "employee"] },
                 isDeleted: false
             })
-                .select("_id firstName lastName role")
+                .select("_id firstName lastName role basicSalary")
                 .sort({
                     firstName: 1,
                     lastName: 1
