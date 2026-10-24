@@ -106,10 +106,16 @@ const EmployeeForm = ({
                     payload
                 );
 
-                toast.success(
-                    data.message ||
-                    `${displayRole} created successfully`
-                );
+                if (data.welcomeEmailSent === false) {
+                    toast.error(data.message);
+                } else if (data.welcomeEmailSent === true) {
+                    toast.success(`${displayRole} created and welcome email sent`);
+                } else {
+                    toast.success(
+                        data.message ||
+                        `${displayRole} created successfully`
+                    );
+                }
 
             }
 

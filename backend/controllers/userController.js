@@ -1,6 +1,16 @@
 import User from "../models/User.js";
 import bcrypt from "bcrypt";
 import mongoose from "mongoose";
+import sendEmail from "../config/nodemailer.js";
+
+const escapeHtml = (value) =>
+    String(value ?? "").replace(/[&<>"']/g, (character) => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;"
+    })[character]);
 
 //Get Users
 //GET /api/users
@@ -189,7 +199,63 @@ export const createUser = async (req, res) => {
             bio,
         });
 
-        return res.status(201).json({success: true, newUser});
+        let welcomeEmailSent = null;
+        if (req.user.role === "admin") {
+            const frontendUrl = (
+                process.env.FRONTEND_URL || "http://localhost:5173"
+            ).replace(/\/+$/, "");
+            const loginUrl = `${frontendUrl}/login`;
+            const safeFirstName = escapeHtml(firstName);
+            const safeLastName = escapeHtml(lastName);
+            const roleName = role === "manager" ? "Manager" : "Employee";
+
+            try {
+                await sendEmail({
+                    to: email,
+                    subject: "Welcome to OneCore",
+                    body: `
+                        <div style="max-width: 600px; margin: 0 auto; font-family: Arial, sans-serif; color: #1e293b; line-height: 1.6;">
+                            <p>Hi ${safeFirstName},</p>
+                            <p>Welcome to OneCore EMS!</p>
+                            <p>Your account has been created successfully. You can use the following credentials to log in.</p>
+                            <h3>Account Details</h3>
+                            <ul>
+                                <li><strong>Name:</strong> ${safeFirstName} ${safeLastName}</li>
+                                <li><strong>Role:</strong> ${roleName}</li>
+                                <li><strong>Login Email:</strong> ${escapeHtml(email)}</li>
+                                <li><strong>Temporary Password:</strong> ${escapeHtml(password)}</li>
+                            </ul>
+                            <h3>How to get started</h3>
+                            <ol>
+                                <li>Open OneCore EMS using the login link below.</li>
+                                <li>Log in using your email and temporary password.</li>
+                                <li>Change the temporary password after login.</li>
+                            </ol>
+                            <p><strong>Login here:</strong> <a href="${escapeHtml(loginUrl)}">${escapeHtml(loginUrl)}</a></p>
+                            <p>For your security, please change your temporary password immediately after logging in. Do not share your credentials with anyone.</p>
+                            <p>Welcome aboard!</p>
+                            <p>Best regards,<br />OneCore</p>
+                        </div>
+                    `
+                });
+                welcomeEmailSent = true;
+            } catch (emailError) {
+                console.error("Failed to send new-account welcome email:", emailError);
+                welcomeEmailSent = false;
+            }
+        }
+
+        const userResponse = newUser.toObject();
+        delete userResponse.password;
+
+        return res.status(201).json({
+            success: true,
+            newUser: userResponse,
+            welcomeEmailSent,
+            message: welcomeEmailSent === false
+                ? "Account created, but the welcome email could not be sent"
+                : undefined
+        });
     } catch (error) {
         if(error.code == 11000){
             return res.status(400).json({error: "Email already exists"});
