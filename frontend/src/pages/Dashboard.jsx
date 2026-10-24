@@ -40,7 +40,7 @@ const Dashboard = () => {
             }
         };
         fetchDashboard();
-    }, []);
+    }, [authLoading, user]);
 
     if (loading) return <Loading />; 
 

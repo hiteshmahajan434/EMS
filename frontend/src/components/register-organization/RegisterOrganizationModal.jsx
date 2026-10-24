@@ -1,5 +1,7 @@
 import React, { useState } from "react";
-import { X, ArrowLeftIcon } from "lucide-react";
+import { X } from "lucide-react";
+import api from "../../api/axios";
+import toast from "react-hot-toast";
 
 import RegisterHeader from "./RegisterHeader";
 import OrganizationForm from "./OrganizationForm";
@@ -63,15 +65,13 @@ const RegisterOrganizationModal = ({ open, onClose }) => {
                 },
             };
 
-            console.log(payload);
+            const { data } = await api.post(
+                "/auth/register-organization",
+                payload
+            );
 
-            // const {data} = await axios.post(
-            //      "/api/auth/register-organization",
-            //      payload
-            // );
-
-            // toast.success(data.message);
-            // onClose();
+            toast.success(data.message);
+            onClose();
 
         } catch (err) {
             setError(

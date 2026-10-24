@@ -52,7 +52,7 @@ const Managers = () => {
 
     // Search is handled on frontend
     const filtered = managers.filter((manager) =>
-        `${manager.firstName} ${manager.lastName} ${manager.position || ""}`
+        `${manager.firstName} ${manager.lastName} ${manager.designation || ""}`
             .toLowerCase()
             .includes(search.toLowerCase())
     );

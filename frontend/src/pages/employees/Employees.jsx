@@ -68,7 +68,7 @@ const Employees = () => {
     }, [selectedDept, selectedManager, role]);
 
     const filtered = employees.filter((emp) =>
-        `${emp.firstName} ${emp.lastName} ${emp.position || ""}`
+        `${emp.firstName} ${emp.lastName} ${emp.designation || ""}`
             .toLowerCase()
             .includes(search.toLowerCase())
     );
@@ -118,7 +118,7 @@ const Employees = () => {
                     </div>
 
                     {/* Manager Filter - Admin Only */}
-                    {role === "ADMIN" && (
+                    {role === "admin" && (
                         <select
                             value={selectedManager}
                             onChange={(e) =>

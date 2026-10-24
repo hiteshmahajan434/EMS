@@ -116,6 +116,7 @@ const RegisterOrganization = () => {
             <RegisterFooter
               loading={loading}
               onCancel={() => navigate("/login/admin")}
+              onClose={() => navigate("/login/admin")}
             />
           </form>
 

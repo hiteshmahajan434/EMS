@@ -151,7 +151,7 @@ export const getPayslipByID = async (req, res) => {
     try {
         const payslip = await Payslip.findById(req.params.id)
             .select("userId month year basicSalary allowances deductions netSalary")
-            .populate("userId", "firstName lastName position email organization")
+            .populate("userId", "firstName lastName designation email organization")
             .lean();
 
         if(!payslip){
@@ -195,7 +195,7 @@ export const getPayslipByID = async (req, res) => {
             employee: {
                 firstName: payslip.userId.firstName,
                 lastName: payslip.userId.lastName,
-                position: payslip.userId.position,
+                designation: payslip.userId.designation,
                 email: payslip.userId.email
             }
         });

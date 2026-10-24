@@ -3,7 +3,6 @@ import { useState } from 'react'
 import api from '../api/axios';
 import toast from 'react-hot-toast';
 
-
 const ProfileForm = ({initialData, onSuccess}) => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
@@ -84,7 +83,7 @@ const ProfileForm = ({initialData, onSuccess}) => {
                     <label className='block text-sm font-medium text-slate-700 mb-2'>
                         Position
                     </label>
-                    <input disabled value={initialData.position} className='bg-slate-50 text-slate-400 cursor-not-allowed'/>
+                    <input disabled value={initialData.designation} className='bg-slate-50 text-slate-400 cursor-not-allowed'/>
                 </div>
             </div>
 

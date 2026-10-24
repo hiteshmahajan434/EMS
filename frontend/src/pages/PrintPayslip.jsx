@@ -57,10 +57,10 @@ const PrintPayslip = () => {
 
         <div>
           <p className='text-xs text-slate-400 uppercase tracking-wider mb-1'>
-            Position
+            Designation
           </p>
           <p className='font-semibold text-slate-900'>
-            {payslip.employee?.position}
+            {payslip.employee?.designation}
           </p>
         </div>
 
@@ -102,7 +102,7 @@ const PrintPayslip = () => {
                 Basic Salary
               </td>
               <td className='text-right py-3 px-4 text-slate-900 font-medium'>
-                ${payslip.basicSalary?.toLocaleString()}
+                ₹{payslip.basicSalary?.toLocaleString()}
               </td>
             </tr>
 
@@ -111,7 +111,7 @@ const PrintPayslip = () => {
                 Allowances
               </td>
               <td className='text-right py-3 px-4 text-slate-900 font-medium'>
-                +${payslip.allowances?.toLocaleString()}
+                +₹{payslip.allowances?.toLocaleString()}
               </td>
             </tr>
 
@@ -120,7 +120,7 @@ const PrintPayslip = () => {
                 Deductions
               </td>
               <td className='text-right py-3 px-4 text-slate-900 font-medium'>
-                -${payslip.deductions?.toLocaleString()}
+                -₹{payslip.deductions?.toLocaleString()}
               </td>
             </tr>
 
@@ -129,7 +129,7 @@ const PrintPayslip = () => {
                 Net Salary
               </td>
               <td className='text-right py-4 px-4 font-bold text-slate-900 text-lg'>
-                ${payslip.netSalary?.toLocaleString()}
+                ₹{payslip.netSalary?.toLocaleString()}
               </td>
             </tr>
           </tbody>

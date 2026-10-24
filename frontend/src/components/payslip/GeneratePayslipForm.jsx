@@ -55,7 +55,7 @@ const GeneratePayslipForm = ({employees, onSuccess}) => {
                 {/* select employee */}
                 <div>
                     <label className='block text-sm font-medium text-slate-700 mb-2'>
-                        Employee
+                        Employee/Manager
                     </label>
                     <select name="employeeId" required>
                         {employees.map((e) => (

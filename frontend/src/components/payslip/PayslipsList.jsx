@@ -51,11 +51,11 @@ const PayslipsList = ({payslips, isAdmin, loading}) => {
                                     </td>
 
                                     <td className='text-slate-500'>
-                                        ${payslip.basicSalary?.toLocaleString()}
+                                        ₹{payslip.basicSalary?.toLocaleString()}
                                     </td>
 
                                     <td className='font-medium text-slate-800'>
-                                        ${payslip.netSalary?.toLocaleString()}
+                                        ₹{payslip.netSalary?.toLocaleString()}
                                     </td>
 
 

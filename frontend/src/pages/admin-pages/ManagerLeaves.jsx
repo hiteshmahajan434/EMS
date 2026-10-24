@@ -6,8 +6,6 @@ import {
   FileTextIcon,
   XCircleIcon,
   SearchIcon,
-  FilterIcon,
-  XIcon
 } from "lucide-react";
 import Loading from "../../components/Loading";
 import PageHero from "../../components/layout/PageHero";
@@ -46,8 +44,6 @@ const ManagerLeaves = () => {
   useEffect(() => {
     fetchLeaves();
   }, [fetchLeaves]);
-
-  // if (loading) return <Loading />;
 
   const filteredLeaves = leaves.filter((leave) => {
     const name = `${leave.user?.firstName || ""} ${leave.user?.lastName || ""}`

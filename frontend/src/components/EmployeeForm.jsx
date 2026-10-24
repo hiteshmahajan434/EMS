@@ -341,7 +341,7 @@ const EmployeeForm = ({
                             name="basicSalary"
                             required
                             min="0"
-                            step="0.01"
+                            step="100"
                             defaultValue={
                                 initialData?.basicSalary ?? 0
                             }

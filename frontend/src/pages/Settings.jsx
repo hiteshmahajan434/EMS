@@ -10,6 +10,7 @@ import toast from "react-hot-toast";
 const Settings = () => {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
 
   const fetchProfile = async () => {
@@ -26,6 +27,8 @@ const Settings = () => {
       );
     } finally {
       setLoading(false);
+      setInitialLoading(false);
+
     }
   };
 
@@ -33,7 +36,7 @@ const Settings = () => {
     fetchProfile();
   }, []); 
 
-  if(loading) return <Loading/>
+  if(initialLoading) return <Loading/>
 
   return (
     <div className="animate-fade-in">
