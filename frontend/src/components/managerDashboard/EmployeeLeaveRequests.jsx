@@ -2,7 +2,11 @@ import React from "react";
 import { ArrowRight, CalendarDays, FileText } from "lucide-react";
 import { format } from "date-fns";
 
-const EmployeeLeaveRequests = ({ requests = [], onViewAll }) => {
+const EmployeeLeaveRequests = ({
+    requests = [],
+    onViewAll,
+    title = "Employee Leave Requests"
+}) => {
     const visibleRequests = requests.slice(0, 2);
 
     return (
@@ -11,7 +15,7 @@ const EmployeeLeaveRequests = ({ requests = [], onViewAll }) => {
             <div className="flex items-center justify-between mb-5">
                 <div>
                     <h2 className="text-lg font-semibold text-slate-900">
-                        Employee Leave Requests
+                        {title}
                     </h2>
 
                     <p className="text-sm text-slate-500 mt-1">
@@ -58,7 +62,7 @@ const EmployeeLeaveRequests = ({ requests = [], onViewAll }) => {
                                     </p>
 
                                     <p className="text-sm text-slate-500">
-                                        {leave.leaveType || "Leave Request"}
+                                        {leave.type || leave.leaveType || "Leave Request"}
                                     </p>
 
                                     <div className="flex items-center gap-1.5 mt-1">

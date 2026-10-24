@@ -1,9 +1,13 @@
 import { CalendarIcon, ClockIcon, UserCheckIcon, UsersIcon, User } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import PageHero from './layout/PageHero'
 import { useAuth } from '../context/AuthContext'
+import TeamAttendanceCard from './managerDashboard/TeamAttendance'
+import EmployeeLeaveRequests from './managerDashboard/EmployeeLeaveRequests'
 
 const AdminDashboard = ({data}) => {
     const {user} = useAuth();
+    const navigate = useNavigate();
     
     const stats = [
         {
@@ -61,6 +65,19 @@ const AdminDashboard = ({data}) => {
                         <s.icon className='size-10 p-2.5 rounded-lg bg-slate-100  text-slate-600 group-hover:bg-indigo-50  group-hover:text-indigo-600 transition-colors duration-200'/>
                     </div>
                 ))}
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <TeamAttendanceCard
+                    stats={data.teamStats}
+                    onViewAll={() => navigate("/admin/attendance")}
+                />
+
+                <EmployeeLeaveRequests
+                    requests={data.pendingManagerLeaveRequests}
+                    title="Manager Leave Requests"
+                    onViewAll={() => navigate("/admin/manager-leaves")}
+                />
             </div>
         </div>
     )

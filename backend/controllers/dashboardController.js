@@ -207,19 +207,39 @@ const getAdminDashboardData = async (req) => {
 
     const managers = await User.find({
         organization: organizationId,
-        role: "manager"
+        role: "manager",
+        isDeleted: false
     }).select("_id");
 
     const managerIds = managers.map(
         manager => manager._id
     );
 
+    const teamMembers = await User.find({
+        organization: organizationId,
+        role: {
+            $in: ["manager", "employee"]
+        },
+        isDeleted: false
+    }).select("_id");
+
+    const teamMemberIds = teamMembers.map(
+        member => member._id
+    );
+
+    const lateTime = new Date();
+    lateTime.setHours(9, 0, 0, 0);
+
     const [
         totalEmployees,
         presentToday,
         onLeave,
         pendingManagerLeaves,
-        payslips
+        payslips,
+        teamPresentToday,
+        teamOnLeave,
+        lateToday,
+        pendingManagerLeaveRequests
     ] = await Promise.all([
 
         User.countDocuments({
@@ -258,7 +278,50 @@ const getAdminDashboardData = async (req) => {
             organizationId,
             month: currentMonth,
             year: currentYear
+        }),
+
+        Attendance.countDocuments({
+            userId: {
+                $in: teamMemberIds
+            },
+            date: today
+        }),
+
+        Leave.countDocuments({
+            userId: {
+                $in: teamMemberIds
+            },
+            status: "APPROVED",
+            startDate: {
+                $lte: today
+            },
+            endDate: {
+                $gte: today
+            }
+        }),
+
+        Attendance.countDocuments({
+            userId: {
+                $in: teamMemberIds
+            },
+            date: today,
+            checkIn: {
+                $gt: lateTime
+            }
+        }),
+
+        Leave.find({
+            userId: {
+                $in: managerIds
+            },
+            organizationId,
+            status: "PENDING"
         })
+            .populate("userId", "firstName lastName")
+            .sort({
+                createdAt: -1
+            })
+            .limit(5)
     ]);
 
     let totalPayroll = 0;
@@ -272,7 +335,14 @@ const getAdminDashboardData = async (req) => {
         presentToday,
         onLeave,
         pendingManagerLeaves,
-        totalPayroll
+        totalPayroll,
+        teamStats: {
+            teamMembers: teamMembers.length,
+            presentToday: teamPresentToday,
+            onLeave: teamOnLeave,
+            lateToday
+        },
+        pendingManagerLeaveRequests
     };
 };
 
