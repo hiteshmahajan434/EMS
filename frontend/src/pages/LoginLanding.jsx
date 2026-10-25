@@ -8,7 +8,7 @@ const LoginLanding = () => {
   const {user, loading} = useAuth();
 
   if(loading) return <Loading/>
-  if(user) return <Navigate to="/dashboard" />
+  if(user) return <Navigate to={user.role === "superadmin" ? "/super-admin/dashboard" : "/dashboard"} />
 
   const portalOptions = [
     {

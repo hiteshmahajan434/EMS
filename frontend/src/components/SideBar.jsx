@@ -41,40 +41,46 @@ const SideBar = () => {
     const role = user?.role;
 
     const navItems =
-        role === "admin"
+        role === "superadmin"
         ? [
-            {name: "Dashboard", href: "/dashboard", icon: LayoutGridIcon },
-            {name: "Manage Organization", icon: UsersIcon, children: [
-                    { name: "Employees", href: "/employees", icon: UserIcon },
-                    { name: "Managers", href: "/managers", icon: UsersIcon },
-                    { name: "Attendance", href: "/admin/attendance", icon: ClipboardCheckIcon },
-                    { name: "Manager Leaves", href: "/admin/manager-leaves", icon: FileTextIcon },
-                    { name: "Payslips", href: "/admin/payslips", icon: WalletCardsIcon }
-                ]
-            },
-            { name: "Settings", href: "/settings", icon: SettingsIcon}
+            { name: "Dashboard", href: "/super-admin/dashboard", icon: LayoutGridIcon },
+            { name: "Organizations", href: "/super-admin/organizations", icon: UsersIcon },
+            { name: "Settings", href: "/settings", icon: SettingsIcon }
         ]
-        : role === "manager"
+        : role === "admin"
             ? [
-                { name: "Dashboard", href: "/dashboard", icon: LayoutGridIcon },
-                { name: "Attendance", href: "/attendance", icon: CalendarIcon },
-                { name: "Leaves", href: "/leave", icon: FileTextIcon },
-                { name: "Payslips", href: "/payslips", icon: DollarSignIcon },
-                { name: "Manage Employees", icon: UsersIcon, children: [
+                {name: "Dashboard", href: "/dashboard", icon: LayoutGridIcon },
+                {name: "Manage Organization", icon: UsersIcon, children: [
                         { name: "Employees", href: "/employees", icon: UserIcon },
-                        { name: "Attendance", href: "/employees/attendance", icon: ClipboardCheckIcon },
-                        { name: "Leaves", href: "/employees/leaves", icon: FileTextIcon },
-                    ],
+                        { name: "Managers", href: "/managers", icon: UsersIcon },
+                        { name: "Attendance", href: "/admin/attendance", icon: ClipboardCheckIcon },
+                        { name: "Manager Leaves", href: "/admin/manager-leaves", icon: FileTextIcon },
+                        { name: "Payslips", href: "/admin/payslips", icon: WalletCardsIcon }
+                    ]
                 },
-                { name: "Settings", href: "/settings", icon: SettingsIcon, }
+                { name: "Settings", href: "/settings", icon: SettingsIcon}
             ]
-            : [
-                { name: "Dashboard", href: "/dashboard", icon: LayoutGridIcon },
-                { name: "Attendance", href: "/attendance", icon: CalendarIcon },
-                { name: "Leaves", href: "/leave", icon: FileTextIcon },
-                { name: "Payslips", href: "/payslips", icon: DollarSignIcon },
-                { name: "Settings", href: "/settings", icon: SettingsIcon },
-            ];
+            : role === "manager"
+                ? [
+                    { name: "Dashboard", href: "/dashboard", icon: LayoutGridIcon },
+                    { name: "Attendance", href: "/attendance", icon: CalendarIcon },
+                    { name: "Leaves", href: "/leave", icon: FileTextIcon },
+                    { name: "Payslips", href: "/payslips", icon: DollarSignIcon },
+                    { name: "Manage Employees", icon: UsersIcon, children: [
+                            { name: "Employees", href: "/employees", icon: UserIcon },
+                            { name: "Attendance", href: "/employees/attendance", icon: ClipboardCheckIcon },
+                            { name: "Leaves", href: "/employees/leaves", icon: FileTextIcon },
+                        ],
+                    },
+                    { name: "Settings", href: "/settings", icon: SettingsIcon, }
+                ]
+                : [
+                    { name: "Dashboard", href: "/dashboard", icon: LayoutGridIcon },
+                    { name: "Attendance", href: "/attendance", icon: CalendarIcon },
+                    { name: "Leaves", href: "/leave", icon: FileTextIcon },
+                    { name: "Payslips", href: "/payslips", icon: DollarSignIcon },
+                    { name: "Settings", href: "/settings", icon: SettingsIcon },
+                ];
 
     const handleLogout = () => {
         logout();
@@ -122,7 +128,7 @@ const SideBar = () => {
                                 {userName}
                             </p>
                             <p className="text-[11px] text-slate-500 truncate">
-                                {role === "admin"? "Administrator": role === "manager"? "Manager": "Employee"}
+                                {role === "superadmin" ? "Super Admin" : role === "admin" ? "Administrator" : role === "manager" ? "Manager" : "Employee"}
                             </p>
                         </div>
                     </div>

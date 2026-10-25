@@ -17,6 +17,8 @@ import Managers from "./pages/admin-pages/Managers";
 import AdminAttendance from "./pages/admin-pages/AdminAttendance";
 import ManagerLeaves from "./pages/admin-pages/ManagerLeaves";
 import AdminPayslips from "./pages/admin-pages/AdminPayslips";
+import SuperAdminDashboard from "./pages/super-admin/SuperAdminDashboard";
+import ManageOrganizations from "./pages/super-admin/ManageOrganizations";
 
 const App = () => {
   return (
@@ -47,11 +49,19 @@ const App = () => {
           subtitle="Sign in to access your profile" />}
         />
         <Route
+          path="/login/superadmin"
+          element={<LoginForm role="superadmin"
+          title="Super Admin Portal"
+          subtitle="Manage organizations across the platform" />}
+        />
+        <Route
           path="/register"
           element={<RegisterOrganization/>}
         />
         <Route element={<Layout />}>
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/super-admin/dashboard" element={<SuperAdminDashboard />} />
+          <Route path="/super-admin/organizations" element={<ManageOrganizations />} />
 
           <Route path="/employees" element={<Employees />} />
           <Route path="/employees/attendance" element={<EmployeeAttendance />} />

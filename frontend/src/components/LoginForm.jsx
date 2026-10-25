@@ -24,10 +24,12 @@ const LoginForm = ({role, title, subtitle}) => {
         setLoading(true);
         try {
             await login(email, password, role);
-            toast.success("Login successful")
-            navigate("/dashboard");
+            toast.success("Login successful");
+            navigate(role === "superadmin" ? "/super-admin/dashboard" : "/dashboard");
         } catch (error) {
-            toast.error(error.response?.data?.error || error.message || "Login failed");
+            const message = error.response?.data?.error || error.message || "Login failed";
+            setError(message);
+            toast.error(message);
         }
         finally{
             setLoading(false);

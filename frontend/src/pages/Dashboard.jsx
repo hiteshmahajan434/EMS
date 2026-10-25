@@ -4,6 +4,7 @@ import Loading from "../components/Loading";
 import EmployeeDashboard from "../components/EmployeeDashboard";
 import AdminDashboard from "../components/AdminDashboard";
 import ManagerDashboard from "../components/ManagerDashboard";
+import SuperAdminDashboard from "./super-admin/SuperAdminDashboard";
 
 import { useAuth } from "../context/AuthContext";
 import api from "../api/axios";
@@ -17,7 +18,12 @@ const Dashboard = () => {
     const role = user?.role; // "admin" | "manager" | "employee"
 
     useEffect(() => {
-        if (authLoading) return;
+        if (authLoading || role === "superadmin") {
+            if (!authLoading && role === "superadmin") {
+                setLoading(false);
+            }
+            return;
+        }
 
         if (!user) {
             setLoading(false);
@@ -40,9 +46,13 @@ const Dashboard = () => {
             }
         };
         fetchDashboard();
-    }, [authLoading, user]);
+    }, [authLoading, user, role]);
 
     if (loading) return <Loading />; 
+
+    if (role === "superadmin") {
+        return <SuperAdminDashboard />;
+    }
 
     if (!data) {
         return (
