@@ -24,6 +24,7 @@ import AppError from "./middlewares/AppError.js";
 import errorHandler from "./middlewares/errorHandler.js";
 
 const app = express();
+app.set("trust proxy", 1);
 
 app.use(securityHeaders);
 app.use(cors());
