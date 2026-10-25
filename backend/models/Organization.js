@@ -2,13 +2,17 @@ import mongoose from "mongoose";
 
 const organizationSchema = mongoose.Schema(
     {
-        companyName: {type: String, required: true},
-        companyEmail: {type: String, required: true, unique: true, lowercase: true},
-        phone: {type: String, required: true},
-        website: {type: String, default: ""},
-        address: {type: String, default: ""},
-        industry: {type: String, default: ""},
-        adminId: {type: mongoose.Schema.Types.ObjectId, ref: "User"}
+        companyName: { type: String, required: true },
+        companyEmail: { type: String, required: true, unique: true, lowercase: true },
+        phone: { type: String, required: true },
+        website: { type: String, default: "" },
+        address: { type: String, default: "" },
+        industry: { type: String, default: "" },
+        isActive: {
+            type: Boolean,
+            default: true
+        },
+        adminId: { type: mongoose.Schema.Types.ObjectId, ref: "User" }
     },
     {
         timestamps: true

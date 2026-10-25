@@ -116,7 +116,7 @@ export const registerOrg = async (req, res) => {
 export const login = async (req, res) => {
     const { email, password, portalRole } = req.body;
 
-    if (!email || !password || !["admin", "employee"].includes(portalRole)) {
+    if (!email || !password || !["admin", "employee", "superadmin"].includes(portalRole)) {
         throw new AppError("Email, password, and a valid login portal are required", 400);
     }
 
@@ -134,12 +134,29 @@ export const login = async (req, res) => {
         throw new AppError("Invalid credentials", 401);
     }
 
-    const allowedRoles = portalRole === "admin"
-        ? ["admin"]
-        : ["employee", "manager"];
+    if (user.role === "superadmin") {
+        if (portalRole !== "superadmin") {
+            throw new AppError("This account cannot access the selected portal", 403);
+        }
+    } else if (user.role === "admin") {
+        if (portalRole !== "admin") {
+            throw new AppError("This account cannot access the selected portal", 403);
+        }
+    } else {
+        const allowedRoles = portalRole === "admin"
+            ? ["admin"]
+            : ["employee", "manager"];
 
-    if (!allowedRoles.includes(user.role)) {
-        throw new AppError("This account cannot access the selected portal", 403);
+        if (!allowedRoles.includes(user.role)) {
+            throw new AppError("This account cannot access the selected portal", 403);
+        }
+    }
+
+    if (user.role !== "superadmin" && user.organization) {
+        const organization = await Organization.findById(user.organization);
+        if (!organization || !organization.isActive) {
+            throw new AppError("Your organization has been deactivated. Please contact the Super Admin.", 403);
+        }
     }
 
     const payload = {

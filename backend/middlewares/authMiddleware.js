@@ -1,5 +1,6 @@
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
+import Organization from "../models/Organization.js";
 import AppError from "./AppError.js";
 
 export const protect = async (req, res, next) => {
@@ -19,7 +20,7 @@ export const protect = async (req, res, next) => {
         throw error;
     }
 
-    const user = await User.findById(decoded.id).select("+tokenVersion");
+    const user = await User.findById(decoded.id).select("+tokenVersion +password");
 
     if (!user) {
         throw new AppError("User not found", 401);
@@ -31,6 +32,13 @@ export const protect = async (req, res, next) => {
 
     if (user.isDeleted) {
         throw new AppError("Your account has been deactivated.", 403);
+    }
+
+    if (user.role !== "superadmin" && user.organization) {
+        const organization = await Organization.findById(user.organization);
+        if (!organization || !organization.isActive) {
+            throw new AppError("Your organization has been deactivated. Please contact the Super Admin.", 403);
+        }
     }
 
     req.user = decoded;
