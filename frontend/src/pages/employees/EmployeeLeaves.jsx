@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Calendar1Icon, CheckCircle2Icon, Clock3Icon, FileTextIcon, XCircleIcon, SearchIcon } from "lucide-react";
 import Loading from "../../components/Loading";
 import PageHero from "../../components/layout/PageHero";
@@ -38,12 +38,12 @@ const EmployeeLeave = () => {
     fetchLeaves();
   }, [fetchLeaves]);
 
-  const filteredLeaves = leaves.filter((leave) => {
+  const filteredLeaves = useMemo(() => leaves.filter((leave) => {
     const name = `${leave.user?.firstName || ""} ${leave.user?.lastName || ""}`
       .toLowerCase();
 
     return name.includes(search.toLowerCase());
-  });
+  }), [leaves, search]);
 
   const totalRequests = filteredLeaves.length;
 
@@ -148,6 +148,7 @@ const EmployeeLeave = () => {
         isManagerAdmin={true}
         onUpdate={fetchLeaves}
         loading={loading}
+        resetKey={`${search}|${date}|${status}`}
       />
     </div>
   );

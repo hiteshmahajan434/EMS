@@ -2,9 +2,13 @@ import { Check, Loader2, X } from "lucide-react";
 import React, { useState } from "react";
 import { format } from "date-fns";
 import api from "../../api/axios";
+import Pagination from "../Pagination";
+import usePagination from "../../hooks/usePagination";
 
-const LeaveHistory = ({leaves, isManagerAdmin, onUpdate, loading}) => {
+const LeaveHistory = ({leaves, isManagerAdmin, onUpdate, loading, resetKey}) => {
     const [processing, setProcessing] = useState(null);
+    const { pageItems, page, pageSize, totalItems, totalPages, setPage } =
+        usePagination(leaves, resetKey ?? leaves);
 
     const handleStatusUpdate = async (id, status) => {
         try {
@@ -68,7 +72,7 @@ const LeaveHistory = ({leaves, isManagerAdmin, onUpdate, loading}) => {
                             </td>
                         </tr>
                     ) : (
-                        leaves.map((leave) => {
+                        pageItems.map((leave) => {
                             return (
                                 <tr key={leave._id || leave.id}>
                                     {isManagerAdmin && (
@@ -137,6 +141,15 @@ const LeaveHistory = ({leaves, isManagerAdmin, onUpdate, loading}) => {
                 </tbody>
             </table>
         </div>
+        {!loading && (
+            <Pagination
+                page={page}
+                pageSize={pageSize}
+                totalItems={totalItems}
+                totalPages={totalPages}
+                onPageChange={setPage}
+            />
+        )}
     </div>
   )
 }

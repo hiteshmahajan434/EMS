@@ -1,7 +1,12 @@
 import { format } from 'date-fns'
 import { Download } from 'lucide-react'
+import Pagination from "../Pagination";
+import usePagination from "../../hooks/usePagination";
 
-const PayslipsList = ({payslips, isAdmin, loading}) => {
+const PayslipsList = ({payslips, isAdmin, loading, resetKey}) => {
+  const { pageItems, page, pageSize, totalItems, totalPages, setPage } =
+    usePagination(payslips, resetKey ?? payslips);
+
   return (
     <div className='card overflow-hidden'>
         <div className='overflow-x-auto'>
@@ -37,7 +42,7 @@ const PayslipsList = ({payslips, isAdmin, loading}) => {
                             </td>
                         </tr>
                     ) : (
-                        payslips.map((payslip) => {
+                        pageItems.map((payslip) => {
                             return (
                                 <tr key={payslip._id || payslip.id}>
                                     {isAdmin && (
@@ -76,6 +81,15 @@ const PayslipsList = ({payslips, isAdmin, loading}) => {
                 </tbody>
             </table>
         </div>
+        {!loading && (
+            <Pagination
+                page={page}
+                pageSize={pageSize}
+                totalItems={totalItems}
+                totalPages={totalPages}
+                onPageChange={setPage}
+            />
+        )}
     </div>
   )
 }

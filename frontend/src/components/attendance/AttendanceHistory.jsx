@@ -1,8 +1,13 @@
 import React from 'react'
 import { getDayTypeDisplay, getWorkingHoursDisplay } from '../../assets/assets'
 import { format } from 'date-fns';
+import Pagination from "../Pagination";
+import usePagination from "../../hooks/usePagination";
 
 export const AttendanceHistory = ({history}) => {
+  const { pageItems, page, pageSize, totalItems, totalPages, setPage } =
+    usePagination(history, history);
+
   return (
     <div className='card overflow-hidden'>
         <div className='px-6 py-4 border-b border-slate-100'>
@@ -31,7 +36,7 @@ export const AttendanceHistory = ({history}) => {
                             </td>
                         </tr>
                     ) : (
-                        history.map((record) => {
+                        pageItems.map((record) => {
                             const dayType = getDayTypeDisplay(record);
                             return (
                                 <tr key={record._id || record.id}>
@@ -73,6 +78,13 @@ export const AttendanceHistory = ({history}) => {
                 </tbody>
             </table>
         </div>
+        <Pagination
+            page={page}
+            pageSize={pageSize}
+            totalItems={totalItems}
+            totalPages={totalPages}
+            onPageChange={setPage}
+        />
     </div>
   )
 }

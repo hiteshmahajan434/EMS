@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Calendar1Icon,
   CheckCircle2Icon,
@@ -45,12 +45,12 @@ const ManagerLeaves = () => {
     fetchLeaves();
   }, [fetchLeaves]);
 
-  const filteredLeaves = leaves.filter((leave) => {
+  const filteredLeaves = useMemo(() => leaves.filter((leave) => {
     const name = `${leave.user?.firstName || ""} ${leave.user?.lastName || ""}`
       .toLowerCase();
 
     return name.includes(search.toLowerCase());
-  });
+  }), [leaves, search]);
 
   const totalRequests = filteredLeaves.length;
 
@@ -158,6 +158,7 @@ const ManagerLeaves = () => {
         isManagerAdmin={true}
         onUpdate={fetchLeaves}
         loading = {loading}
+        resetKey={`${search}|${date}|${status}`}
       />
     </div>
   );

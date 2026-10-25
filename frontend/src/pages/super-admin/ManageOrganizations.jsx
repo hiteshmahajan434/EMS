@@ -1,9 +1,9 @@
-import { useEffect, useMemo, useState } from "react";
-import { Search, ShieldCheck, ShieldX, UserRound } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { Search, ShieldCheck, UserRound } from "lucide-react";
 import toast from "react-hot-toast";
 import api from "../../api/axios";
 import PageHero from "../../components/layout/PageHero";
-import Loading from "../../components/Loading";
+import Pagination from "../../components/Pagination";
 
 const pageSize = 10;
 
@@ -11,13 +11,14 @@ const ManageOrganizations = () => {
   const [organizations, setOrganizations] = useState([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [totalOrganizations, setTotalOrganizations] = useState(0);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [togglingId, setTogglingId] = useState(null);
 
-  const fetchOrganizations = async () => {
+  const fetchOrganizations = useCallback(async () => {
     try {
       setLoading(true);
       setError("");
@@ -31,25 +32,19 @@ const ManageOrganizations = () => {
       });
       setOrganizations(data.organizations || []);
       setTotalPages(data.pagination?.totalPages || 1);
+      setTotalOrganizations(data.pagination?.total || 0);
     } catch (error) {
       setError(error.response?.data?.error || "Failed to load organizations");
       toast.error(error.response?.data?.error || "Failed to load organizations");
     } finally {
       setLoading(false);
     }
-  };
+  }, [page, search, statusFilter]);
 
   useEffect(() => {
-    fetchOrganizations();
-  }, [page, statusFilter]);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setPage(1);
-      fetchOrganizations();
-    }, 300);
+    const timer = setTimeout(fetchOrganizations, 300);
     return () => clearTimeout(timer);
-  }, [search]);
+  }, [fetchOrganizations]);
 
   const handleStatusToggle = async (organization) => {
     const nextStatus = !organization.isActive;
@@ -73,9 +68,7 @@ const ManageOrganizations = () => {
     }
   };
 
-  const rows = useMemo(() => organizations, [organizations]);
-
-  if (error && !loading && rows.length === 0) {
+  if (error && !loading && organizations.length === 0) {
     return (
       <div className="card p-8 text-center text-slate-600">
         <p className="text-lg font-medium text-slate-800">Unable to load organizations</p>
@@ -98,13 +91,23 @@ const ManageOrganizations = () => {
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
             <input
               value={search}
-              onChange={(event) => setSearch(event.target.value)}
+              onChange={(event) => {
+                setPage(1);
+                setSearch(event.target.value);
+              }}
               className="w-full pl-10!"
               placeholder="Search organizations by name or email"
             />
           </div>
 
-          <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)} className="max-w-44">
+          <select
+            value={statusFilter}
+            onChange={(event) => {
+              setPage(1);
+              setStatusFilter(event.target.value);
+            }}
+            className="max-w-44"
+          >
             <option value="all">All Status</option>
             <option value="active">Active</option>
             <option value="inactive">Inactive</option>
@@ -130,12 +133,12 @@ const ManageOrganizations = () => {
                 <tr>
                   <td colSpan="6" className="py-10 text-center text-slate-500">Loading organizations...</td>
                 </tr>
-              ) : rows.length === 0 ? (
+              ) : organizations.length === 0 ? (
                 <tr>
                   <td colSpan="6" className="py-10 text-center text-slate-500">No organizations found</td>
                 </tr>
               ) : (
-                rows.map((organization) => (
+                organizations.map((organization) => (
                   <tr key={organization._id}>
                     <td>
                       <div className="flex items-center gap-3">
@@ -185,16 +188,14 @@ const ManageOrganizations = () => {
         </div>
       </div>
 
-      <div className="flex justify-between items-center mt-6">
-        <p className="text-sm text-slate-500">Page {page} of {totalPages}</p>
-        <div className="flex gap-2">
-          <button type="button" className="btn-secondary" onClick={() => setPage((current) => Math.max(1, current - 1))} disabled={page <= 1}>
-            Previous
-          </button>
-          <button type="button" className="btn-primary" onClick={() => setPage((current) => Math.min(totalPages, current + 1))} disabled={page >= totalPages}>
-            Next
-          </button>
-        </div>
+      <div className="card mt-4">
+        <Pagination
+          page={page}
+          pageSize={pageSize}
+          totalItems={totalOrganizations}
+          totalPages={totalPages}
+          onPageChange={setPage}
+        />
       </div>
     </div>
   );

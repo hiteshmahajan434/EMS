@@ -8,6 +8,8 @@ import {
 } from "../../assets/assets";
 import api from "../../api/axios";
 import Loading from "../../components/Loading";
+import Pagination from "../../components/Pagination";
+import usePagination from "../../hooks/usePagination";
 
 const EmployeeAttendance = () => {
   const [attendance, setAttendance] = useState([]);
@@ -80,6 +82,11 @@ const EmployeeAttendance = () => {
 
     });
   }, [attendance, search]);
+  const { pageItems, page, pageSize, totalItems, totalPages, setPage } =
+    usePagination(
+      filteredAttendance,
+      `${search}|${selectedDept}|${selectedStatus}|${selectedDate}`
+    );
 
 
   // =========================
@@ -349,7 +356,7 @@ const EmployeeAttendance = () => {
 
               ) : (
 
-                filteredAttendance.map((record) => {
+                pageItems.map((record) => {
 
                   const employee = record.userId;
 
@@ -429,6 +436,15 @@ const EmployeeAttendance = () => {
           </table>
 
         </div>
+        {!loading && (
+          <Pagination
+            page={page}
+            pageSize={pageSize}
+            totalItems={totalItems}
+            totalPages={totalPages}
+            onPageChange={setPage}
+          />
+        )}
 
       </div>
 

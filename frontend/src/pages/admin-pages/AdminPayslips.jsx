@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import Loading from "../../components/Loading";
 import PayslipsList from "../../components/payslip/PayslipsList";
 import GeneratePayslipForm from "../../components/payslip/GeneratePayslipForm";
@@ -45,13 +45,13 @@ const AdminPayslips = () => {
     fetchPayslips();
   }, [fetchPayslips]);
 
-  const filteredPayslips = payslips.filter((payslip) => {
+  const filteredPayslips = useMemo(() => payslips.filter((payslip) => {
     const name = `${payslip.userId?.firstName || ""} ${
       payslip.userId?.lastName || ""
     }`.toLowerCase();
 
     return name.includes(search.toLowerCase());
-  });
+  }), [payslips, search]);
 
   if(initialLoading) return <Loading/>
 
@@ -131,7 +131,12 @@ const AdminPayslips = () => {
         </div>
       </div>
 
-      <PayslipsList payslips={filteredPayslips} isAdmin={true} loading={loading} />
+      <PayslipsList
+        payslips={filteredPayslips}
+        isAdmin={true}
+        loading={loading}
+        resetKey={`${search}|${role}|${month}|${year}`}
+      />
     </div>
   )
 }

@@ -6,6 +6,8 @@ import { DEPARTMENTS, getWorkingHoursDisplay } from "../../assets/assets";
 import api from "../../api/axios";
 import toast from "react-hot-toast";
 import Loading from "../../components/Loading";
+import Pagination from "../../components/Pagination";
+import usePagination from "../../hooks/usePagination";
 
 const AdminAttendance = () => {
   const [attendance, setAttendance] = useState([]);
@@ -91,6 +93,11 @@ const AdminAttendance = () => {
       return fullName.includes(search.toLowerCase());
     });
   }, [attendance, search]);
+  const { pageItems, page, pageSize, totalItems, totalPages, setPage } =
+    usePagination(
+      filteredAttendance,
+      `${search}|${selectedRole}|${selectedDept}|${selectedStatus}|${selectedDate}`
+    );
 
 
   // =========================
@@ -322,7 +329,7 @@ const AdminAttendance = () => {
 
               ) : (
 
-                filteredAttendance.map((record) => {
+                pageItems.map((record) => {
 
                   const user = record.userId;
 
@@ -420,6 +427,15 @@ const AdminAttendance = () => {
           </table>
 
         </div>
+        {!loading && (
+          <Pagination
+            page={page}
+            pageSize={pageSize}
+            totalItems={totalItems}
+            totalPages={totalPages}
+            onPageChange={setPage}
+          />
+        )}
 
       </div>
 
