@@ -4,6 +4,7 @@ import PageHero from "./layout/PageHero";
 import TodayAttendance from "./layout/TodayAttendance";
 import QuickActions from "./layout/QuickActions";
 import { useAuth } from "../context/AuthContext";
+import NotificationBell from "./notifications/NotificationBell";
 
 const EmployeeDashboard = ({ data }) => {
     const {user} = useAuth();
@@ -42,7 +43,9 @@ const EmployeeDashboard = ({ data }) => {
                 title={`Welcome back, ${user.firstName || "Employee"}!`}
                 badge={emp.department || "Team member"}
                 subtitle={"Here's your work summary for today."}
-            />
+            >
+                {["manager", "employee"].includes(user.role) && <NotificationBell />}
+            </PageHero>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-5 mb-8">
                 {cards.map((card, index) => {

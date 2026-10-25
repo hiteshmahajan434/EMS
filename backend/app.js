@@ -9,6 +9,7 @@ import attendanceRouter from "./routes/attendanceRoutes.js";
 import leaveRouter from "./routes/leaveRoutes.js";
 import payslipRouter from "./routes/payslipRoutes.js";
 import dashboardRouter from "./routes/dashboardRoutes.js";
+import notificationRouter from "./routes/notificationRoutes.js";
 
 import { serve } from "inngest/express";
 import { functions, inngest } from "./inngest/index.js";
@@ -44,6 +45,7 @@ app.use("/api/attendance", attendanceRouter);
 app.use("/api/leave", leaveRouter);
 app.use("/api/payslip", payslipRouter);
 app.use("/api/dashboard", dashboardRouter);
+app.use("/api/notifications", notificationRouter);
 
 app.use((req, res, next) => {
     next(new AppError(`Route not found: ${req.method} ${req.originalUrl}`, 404));

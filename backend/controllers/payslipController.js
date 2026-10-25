@@ -1,6 +1,7 @@
 import User from "../models/User.js";
 import Payslip from "../models/Payslip.js";
 import AppError from "../middlewares/AppError.js";
+import { createNotification } from "../services/notificationService.js";
 
 //Create Payslip
 //POST /api/payslip
@@ -18,14 +19,16 @@ export const createPayslip = async (req, res) => {
             throw new AppError("User not found", 404);
         }
 
-        // Only Admin can generate payslips
-        if (req.user.role !== "admin") {
-            throw new AppError("Only admin can generate payslips", 403);
+        // Admin can generate only for users in the same organization
+        if (!user.organization || user.organization.toString() !== req.user.organization.toString()) {
+            throw new AppError("User does not belong to your organization", 403);
         }
 
-        // Admin can generate only for users in the same organization
-        if (user.organization.toString() !== req.user.organization.toString()) {
-            throw new AppError("User does not belong to your organization", 403);
+        if (
+            req.user.role === "manager" &&
+            (user.role !== "employee" || user.manager?.toString() !== req.user.id)
+        ) {
+            throw new AppError("Managers can generate payslips only for their direct reports", 403);
         }
 
         const basicSalary = user.basicSalary;
@@ -51,6 +54,15 @@ export const createPayslip = async (req, res) => {
             allowances: Number(allowances || 0),
             deductions: Number(deductions || 0),
             netSalary
+        });
+
+        const monthName = new Date(2000, Number(month) - 1).toLocaleString("en-US", { month: "long" });
+        await createNotification({
+            recipientUserId: user._id,
+            organizationId,
+            type: "PAYSLIP_AVAILABLE",
+            message: `Your ${monthName} ${year} payslip is available.`,
+            relatedEntityId: payslip._id
         });
 
         return res.status(201).json({success: true, data: payslip});        

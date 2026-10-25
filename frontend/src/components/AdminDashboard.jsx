@@ -4,6 +4,7 @@ import PageHero from './layout/PageHero'
 import { useAuth } from '../context/AuthContext'
 import TeamAttendanceCard from './managerDashboard/TeamAttendance'
 import EmployeeLeaveRequests from './managerDashboard/EmployeeLeaveRequests'
+import NotificationBell from './notifications/NotificationBell'
 
 const AdminDashboard = ({data}) => {
     const {user} = useAuth();
@@ -42,7 +43,9 @@ const AdminDashboard = ({data}) => {
                 icon={User}
                 title={`Welcome back, ${user?.firstName || "Admin"}!`}
                 subtitle={"Here's your work summary for today."}
-            />
+            >
+                <NotificationBell />
+            </PageHero>
 
             <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5 mb-8'>
                 {stats.map((s) => (

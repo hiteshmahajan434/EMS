@@ -2,6 +2,7 @@ import User from "../models/User.js";
 import Leave from "../models/Leave.js";
 import { inngest } from "../inngest/index.js";
 import AppError from "../middlewares/AppError.js";
+import { createNotifications } from "../services/notificationService.js";
 
 //Employee/Manager apply leave to Manager/Admin
 //POST /api/leave
@@ -57,6 +58,37 @@ export const createLeave = async (req, res) => {
             reason,
             status: "PENDING"
         });
+
+        const applicantName = `${user.firstName} ${user.lastName}`.trim();
+        let approvers = [];
+
+        if (user.role === "employee" && user.manager) {
+            const manager = await User.findOne({
+                _id: user.manager,
+                organization: organizationId,
+                role: "manager",
+                status: "ACTIVE",
+                isDeleted: false
+            }).select("_id");
+            if (manager) approvers = [manager._id];
+        }
+
+        if (user.role === "manager" || approvers.length === 0) {
+            const admins = await User.find({
+                organization: organizationId,
+                role: "admin",
+                status: "ACTIVE",
+                isDeleted: false
+            }).select("_id");
+            approvers = admins.map((admin) => admin._id);
+        }
+
+        await createNotifications({
+            organizationId,
+            type: "LEAVE_APPLICATION",
+            message: `${applicantName} submitted a ${type.toLowerCase()} leave request from ${start.toLocaleDateString()} to ${end.toLocaleDateString()}. Reason: ${reason}`,
+            relatedEntityId: newLeave._id
+        }, approvers);
 
         await inngest.send({
             name: "leave/pending",
@@ -167,6 +199,10 @@ export const updateLeave = async (req, res) => {
             throw new AppError("Leave not found", 404);
         }
 
+        if (leave.organizationId.toString() !== req.user.organization) {
+            throw new AppError("Unauthorized", 403);
+        }
+
         // -------------------------------
         // Manager approves Employee leave
         // -------------------------------
@@ -198,9 +234,22 @@ export const updateLeave = async (req, res) => {
             throw new AppError("Access denied", 403);
         }
 
+        const statusChanged = leave.status !== status;
         leave.status = status;
 
         await leave.save();
+
+        if (statusChanged) {
+            const applicantName = `${leave.userId.firstName} ${leave.userId.lastName}`.trim();
+            const action = status === "APPROVED" ? "approved" : "rejected";
+            await createNotifications({
+                recipientUserId: leave.userId._id,
+                organizationId: leave.organizationId,
+                type: "LEAVE_STATUS",
+                message: `${applicantName}, your ${leave.type.toLowerCase()} leave request from ${leave.startDate.toLocaleDateString()} to ${leave.endDate.toLocaleDateString()} was ${action}.`,
+                relatedEntityId: leave._id
+            }, [leave.userId._id]);
+        }
         
         return res.json({success: true, data: leave});
 }
