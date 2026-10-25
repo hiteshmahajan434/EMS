@@ -41,8 +41,7 @@ export function AuthProvider({children}){
             portalRole
         });
 
-        localStorage.setItem("token", data.token);
-        setToken(data.token);
+        updateToken(data.token);
 
         await refreshSession();
 
@@ -55,7 +54,12 @@ export function AuthProvider({children}){
         setUser(null);
     }
 
-    const value = {user, token, loading, login, logout, refreshSession};
+    const updateToken = (nextToken) => {
+        localStorage.setItem("token", nextToken);
+        setToken(nextToken);
+    };
+
+    const value = {user, token, loading, login, logout, refreshSession, updateToken};
 
     return <AuthContext.Provider value={value}>
         {children}

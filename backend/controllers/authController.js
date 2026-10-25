@@ -120,7 +120,7 @@ export const login = async (req, res) => {
         throw new AppError("Email, password, and a valid login portal are required", 400);
     }
 
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email }).select("+password +tokenVersion");
     if (!user) {
         throw new AppError("Invalid credentials", 401);
     }
@@ -146,7 +146,8 @@ export const login = async (req, res) => {
         id: user.id,
         role: user.role,
         email: user.email,
-        organization: user.organization
+        organization: user.organization,
+        tokenVersion: user.tokenVersion ?? 0
     };
 
     const token = jwt.sign(payload, process.env.JWT_SECRET_KEY, {
@@ -179,7 +180,7 @@ export const changePassword = async (req, res) => {
 
     const userId = req.user.id;
 
-    const user = await User.findById(userId);
+    const user = await User.findById(userId).select("+password");
 
     if (!user) {
         throw new AppError("User not found", 404);
@@ -191,10 +192,32 @@ export const changePassword = async (req, res) => {
     }
 
     const hashed = await bcrypt.hash(newPassword, 10);
-    await User.findByIdAndUpdate(userId, { password: hashed });
+    const updatedUser = await User.findByIdAndUpdate(
+        userId,
+        {
+            $set: { password: hashed },
+            $inc: { tokenVersion: 1 }
+        },
+        { returnDocument: "after" }
+    ).select("+tokenVersion");
+
+    if (!updatedUser) {
+        throw new AppError("User not found", 404);
+    }
+
+    const token = jwt.sign({
+        id: user.id,
+        role: user.role,
+        email: user.email,
+        organization: user.organization,
+        tokenVersion: updatedUser.tokenVersion
+    }, process.env.JWT_SECRET_KEY, {
+        expiresIn: "7d"
+    });
 
     return res.json({
         success: true,
-        message: "Password changed successfully"
+        message: "Password changed successfully",
+        token
     });
 }

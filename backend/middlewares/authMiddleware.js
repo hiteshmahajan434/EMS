@@ -19,10 +19,14 @@ export const protect = async (req, res, next) => {
         throw error;
     }
 
-    const user = await User.findById(decoded.id);
+    const user = await User.findById(decoded.id).select("+tokenVersion");
 
     if (!user) {
         throw new AppError("User not found", 401);
+    }
+
+    if ((decoded.tokenVersion ?? 0) !== (user.tokenVersion ?? 0)) {
+        throw new AppError("Unauthorized", 401);
     }
 
     if (user.isDeleted) {

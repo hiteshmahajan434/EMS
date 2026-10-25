@@ -4,6 +4,28 @@ import mongoose from "mongoose";
 import sendEmail from "../config/nodemailer.js";
 import AppError from "../middlewares/AppError.js";
 
+const getManageableUserFilter = (req, id) => {
+    if (!req.user.organization) {
+        throw new AppError("Forbidden", 403);
+    }
+
+    const filter = {
+        _id: id,
+        organization: req.user.organization
+    };
+
+    if (req.user.role === "admin") {
+        filter.role = { $in: ["employee", "manager"] };
+    } else if (req.user.role === "manager") {
+        filter.role = "employee";
+        filter.manager = req.user.id;
+    } else {
+        throw new AppError("Forbidden", 403);
+    }
+
+    return filter;
+};
+
 const escapeHtml = (value) =>
     String(value ?? "").replace(/[&<>"']/g, (character) => ({
         "&": "&amp;",
@@ -37,8 +59,9 @@ export const getUsers = async (req, res) => {
                     role: "manager",
                     ...(department && { department })
                 })
-                .sort({ createdAt: -1 })
-                .lean();
+                    .select("_id firstName lastName department")
+                    .sort({ createdAt: -1 })
+                    .lean();
 
                 return res.status(200).json({
                     managers
@@ -69,6 +92,7 @@ export const getUsers = async (req, res) => {
             }
 
             const employees = await User.find(employeeFilter)
+                .select("_id firstName lastName email phone role organization manager basicSalary status isDeleted department designation joiningDate bio")
                 .sort({ createdAt: -1 })
                 .lean();
 
@@ -95,6 +119,7 @@ export const getUsers = async (req, res) => {
             }
 
             const employees = await User.find(employeeFilter)
+                .select("_id firstName lastName email phone role organization manager basicSalary status isDeleted department designation joiningDate bio")
                 .sort({ createdAt: -1 })
                 .lean();
 
@@ -233,6 +258,7 @@ export const createUser = async (req, res) => {
 
         const userResponse = newUser.toObject();
         delete userResponse.password;
+        delete userResponse.tokenVersion;
 
         return res.status(201).json({
             success: true,
@@ -256,7 +282,7 @@ export const createUser = async (req, res) => {
 export const updateUser = async (req, res) => {
          const { id } = req.params;
 
-        const user = await User.findById(id);
+        const user = await User.findOne(getManageableUserFilter(req, id));
 
         if (!user) {
             throw new AppError("User not found", 404);
@@ -276,6 +302,17 @@ export const updateUser = async (req, res) => {
             bio,
             status
         } = req.body;
+
+        if (req.user.role === "manager") {
+            const hasEmail = Object.prototype.hasOwnProperty.call(req.body, "email");
+            if (hasEmail && typeof email !== "string") {
+                throw new AppError("Email must be text", 400);
+            }
+
+            if ((hasEmail && email.toLowerCase() !== user.email) || password) {
+                throw new AppError("Managers cannot change employee credentials", 403);
+            }
+        }
 
         if (firstName) user.firstName = firstName;
         if (lastName) user.lastName = lastName;
@@ -316,7 +353,7 @@ export const updateUser = async (req, res) => {
 export const deleteUser = async (req, res) => {
         const {id} = req.params;
 
-        const user = await User.findById(id);
+        const user = await User.findOne(getManageableUserFilter(req, id));
 
         if(!user){
             throw new AppError("User not exists", 404);

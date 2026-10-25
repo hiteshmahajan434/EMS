@@ -2,8 +2,10 @@ import { Loader2Icon, LockIcon, X } from 'lucide-react';
 import { useState } from 'react'
 import api from '../api/axios';
 import toast from 'react-hot-toast';
+import { useAuth } from '../context/AuthContext';
 
 const ChangePassword = ({open, onClose}) => {
+    const { updateToken } = useAuth();
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState({type:"", text: ""});
 
@@ -24,6 +26,7 @@ const ChangePassword = ({open, onClose}) => {
                 "/auth/change-password",
                 payload
             );
+            updateToken(data.token);
 
             toast.success(
                 data.message || "Password changed successfully"

@@ -135,7 +135,7 @@ export const getLeave = async (req, res) => {
         }
 
         const leaves = await Leave.find(filter)
-            .populate("userId")
+            .populate("userId", "firstName lastName role manager organization")
             .sort({createdAt: -1});
 
         const data = leaves.map((leave) => {
@@ -161,7 +161,7 @@ export const updateLeave = async (req, res) => {
         }
 
         const leave=await Leave.findById(req.params.id)
-            .populate("userId");
+            .populate("userId", "firstName lastName role manager organization");
 
         if(!leave){
             throw new AppError("Leave not found", 404);
