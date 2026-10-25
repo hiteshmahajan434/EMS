@@ -227,7 +227,7 @@ export const createUser = async (req, res) => {
                     body: `
                         <div style="max-width: 600px; margin: 0 auto; font-family: Arial, sans-serif; color: #1e293b; line-height: 1.6;">
                             <p>Hi ${safeFirstName},</p>
-                            <p>Welcome to OneCore EMS!</p>
+                            <p>Welcome to OneCore HRMS!</p>
                             <p>Your account has been created successfully. You can use the following credentials to log in.</p>
                             <h3>Account Details</h3>
                             <ul>
@@ -238,7 +238,7 @@ export const createUser = async (req, res) => {
                             </ul>
                             <h3>How to get started</h3>
                             <ol>
-                                <li>Open OneCore EMS using the login link below.</li>
+                                <li>Open OneCore HRMS using the login link below.</li>
                                 <li>Log in using your email and temporary password.</li>
                                 <li>Change the temporary password after login.</li>
                             </ol>

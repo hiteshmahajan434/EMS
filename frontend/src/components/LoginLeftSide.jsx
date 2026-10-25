@@ -21,7 +21,7 @@ const LoginLeftSide = () => {
 
         {/* Heading */}
         <h1 className="text-4xl lg:text-5xl font-semibold text-white mb-6 leading-tight tracking-tight">
-          Employee <br />
+          Human Resource <br />
           Management System
         </h1>
 

@@ -82,8 +82,8 @@ export const registerOrg = async (req, res) => {
             subject: "Welcome to OneCore!",
             body: `
                     <div style="max-width: 600px; font-family: Arial, sans-serif; line-height: 1.6;">
-                        <h2>Welcome to OneCore EMS, ${escapeHtml(newAdmin.firstName)}!</h2>
-                        <p>Your organization has been successfully registered on OneCore EMS.</p>
+                        <h2>Welcome to OneCore HRMS, ${escapeHtml(newAdmin.firstName)}!</h2>
+                        <p>Your organization has been successfully registered on OneCore HRMS.</p>
                         <p>You can now log in using your registered email address and the password you created during registration.</p>
                         <p>As your organization's administrator, you can:</p>
                         <ul>
